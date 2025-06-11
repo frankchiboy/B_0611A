@@ -154,12 +154,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                   />
                   
                   {/* 選單本體 - 只有選單有背景 */}
-                  <div className="absolute top-full left-0 right-0 z-[9999] bg-white shadow-2xl rounded-xl border border-slate-200 overflow-visible">
+                  <div className="absolute top-full left-0 right-0 z-[9999] bg-white/100 shadow-2xl rounded-xl border border-slate-200 overflow-visible backdrop-blur-none">
                   <div className="px-3 py-2 border-b border-slate-100 bg-slate-50 rounded-t-xl">
                     <h4 className="text-xs font-semibold text-slate-700 uppercase">選擇專案</h4>
                   </div>
                   
-                  <div className="max-h-64 overflow-y-auto bg-white">
+                  <div className="max-h-64 overflow-y-auto bg-white/100">
                     {projects.map(project => (
                       <button
                         key={project.id}
@@ -183,7 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                     ))}
                   </div>
 
-                  <div className="border-t border-slate-200 bg-slate-50 rounded-b-xl">
+                  <div className="border-t border-slate-200 bg-slate-50/100 rounded-b-xl">
                     <button
                       onClick={handleCreateNewProject}
                       className="w-full px-3 py-2 text-left text-sm text-teal-700 hover:bg-teal-50 transition-colors flex items-center font-medium"
