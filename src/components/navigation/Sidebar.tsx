@@ -1,26 +1,5 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  GanttChart, 
-  CheckSquare,
-  Users,
-  Coins,
-  AlertTriangle,
-  Archive,
-  Clock,
-  BarChart4,
-  Settings,
-  PlusCircle,
-  Anchor,
-  Menu,
-  X,
-  Workflow,
-  Layers,
-  FileSpreadsheet,
-  Activity,
-  Sliders,
-  FileTemplate
-} from 'lucide-react';
+import { LayoutDashboard, GanttChart, CheckSquare, Users, Coins, AlertTriangle, Archive, Clock, BarChart4, Settings, PlusCircle, Anchor, Menu, X, Workflow, Layers, FileSpreadsheet, Activity, Sliders, BookTemplate as FileTemplate } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
 
 interface SidebarProps {

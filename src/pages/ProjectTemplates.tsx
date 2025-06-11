@@ -1,23 +1,6 @@
 import React, { useState } from 'react';
 import { useProject } from '../context/ProjectContext';
-import { 
-  FileTemplate, 
-  Plus, 
-  Download, 
-  Upload, 
-  Star, 
-  Copy, 
-  Edit, 
-  Trash, 
-  Eye,
-  Clock,
-  Users,
-  Calendar,
-  Target,
-  Layers,
-  CheckCircle,
-  Bookmark
-} from 'lucide-react';
+import { BookTemplate as FileTemplate, Plus, Download, Upload, Star, Copy, Edit, Trash, Eye, Clock, Users, Calendar, Target, Layers, CheckCircle, Bookmark } from 'lucide-react';
 
 interface ProjectTemplate {
   id: string;
