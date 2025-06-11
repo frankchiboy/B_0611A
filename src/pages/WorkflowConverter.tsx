@@ -78,19 +78,19 @@ export const WorkflowConverter: React.FC = () => {
     const recursionStack = new Set<string>();
     
     // 深度優先搜尋來計算每個任務的開始和結束時間
-    const calculateTaskTime = (taskId: string): Task => {
-      // 檢查循環依賴
+    const calculateTaskTime = (taskId: string): Task | null => {
+      // 檢查循環依賴 - 返回 null 而不是拋出錯誤
       if (recursionStack.has(taskId)) {
-        throw new Error(`檢測到循環依賴，涉及任務 ${taskId}`);
+        return null;
       }
       
       // 如果已經計算過，返回快取結果
       if (visited.has(taskId)) {
-        return scheduledTasks.find(t => t.id === taskId)!;
+        return scheduledTasks.find(t => t.id === taskId) || null;
       }
 
       const task = taskList.find(t => t.id === taskId);
-      if (!task) throw new Error(`找不到任務 ${taskId}`);
+      if (!task) return null;
 
       // 加入遞歸堆疊
       recursionStack.add(taskId);
@@ -99,11 +99,21 @@ export const WorkflowConverter: React.FC = () => {
 
       // 計算依賴任務的最晚結束時間
       if (task.dependencies.length > 0) {
-        const depEndTimes = task.dependencies.map(depId => {
+        const depEndTimes: number[] = [];
+        
+        for (const depId of task.dependencies) {
           const depTask = calculateTaskTime(depId);
-          return depTask.end || 0;
-        });
-        startTime = Math.max(...depEndTimes);
+          // 如果依賴任務無法排程（循環依賴），則當前任務也無法排程
+          if (depTask === null) {
+            recursionStack.delete(taskId);
+            return null;
+          }
+          depEndTimes.push(depTask.end || 0);
+        }
+        
+        if (depEndTimes.length > 0) {
+          startTime = Math.max(...depEndTimes);
+        }
       }
 
       const scheduledTask: Task = {
@@ -122,21 +132,15 @@ export const WorkflowConverter: React.FC = () => {
     };
 
     // 計算所有任務
-    try {
-      taskList.forEach(task => {
-        if (!visited.has(task.id)) {
-          calculateTaskTime(task.id);
+    taskList.forEach(task => {
+      if (!visited.has(task.id)) {
+        const result = calculateTaskTime(task.id);
+        // 如果任務無法排程（由於循環依賴），跳過它
+        if (result === null) {
+          console.warn(`任務 ${task.id} (${task.title}) 因循環依賴而無法排程`);
         }
-      });
-    } catch (error) {
-      console.error('任務排程計算錯誤:', error);
-      // 返回基本排程作為備援
-      return taskList.map((task, index) => ({
-        ...task,
-        start: index * task.duration,
-        end: (index + 1) * task.duration
-      }));
-    }
+      }
+    });
 
     return scheduledTasks.sort((a, b) => (a.start || 0) - (b.start || 0));
   };
@@ -144,7 +148,7 @@ export const WorkflowConverter: React.FC = () => {
   // 轉換為 Bolt Workflow JSON
   const convertToWorkflowJSON = (): WorkflowJSON => {
     const scheduledTasks = calculateSchedule(tasks);
-    const totalDuration = Math.max(...scheduledTasks.map(t => t.end || 0));
+    const totalDuration = scheduledTasks.length > 0 ? Math.max(...scheduledTasks.map(t => t.end || 0)) : 0;
 
     const nodes: WorkflowNode[] = scheduledTasks.map(task => ({
       id: task.id,
@@ -374,7 +378,7 @@ export const WorkflowConverter: React.FC = () => {
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">專案總工期</span>
                 <span className="font-medium text-slate-800">
-                  {Math.max(...scheduledTasks.map(t => t.end || 0))} 天
+                  {scheduledTasks.length > 0 ? Math.max(...scheduledTasks.map(t => t.end || 0)) : 0} 天
                 </span>
               </div>
             </div>
