@@ -1,6 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, GanttChart, CheckSquare, Users, Coins, AlertTriangle, Archive, Clock, BarChart4, Settings, PlusCircle, Anchor, Menu, X, Workflow, Layers, FileSpreadsheet, Activity, Sliders, BookTemplate as FileTemplate, ChevronDown, FolderOpen } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
+import type { Project } from '../../types/projectTypes';
 
 interface SidebarProps {
   currentView: string;
@@ -49,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
     }
   };
 
-  const handleProjectSelect = (project: any) => {
+  const handleProjectSelect = (project: Project) => {
     console.log('選擇專案:', project.name, 'ID:', project.id);
     setCurrentProject(project);
     setCurrentView('dashboard');
@@ -145,30 +146,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
 
               {/* 專案列表下拉選單 - 修復可見性 */}
               {showProjectList && (
-                <div className="absolute top-full left-0 right-0 bg-white/95 rounded-lg shadow-2xl border border-slate-200 py-2 z-[9999] max-h-64 overflow-y-auto">
+
+                <div className="absolute top-full left-0 right-0 z-50 bg-white/90 backdrop-blur-sm shadow-xl rounded-lg p-2 max-h-64 overflow-y-auto">
+
                   <div className="px-3 py-2 border-b border-slate-100 bg-slate-50">
                     <h4 className="text-xs font-semibold text-slate-700 uppercase">選擇專案</h4>
                   </div>
                   
-                  <div className="bg-white">
-                    {projects.map(project => (
-                      <button
-                        key={project.id}
-                        onClick={() => handleProjectSelect(project)}
-                        className={`w-full px-3 py-2 text-left hover:bg-slate-50 transition-colors bg-white ${
-                          currentProject.id === project.id 
-                            ? 'bg-teal-50 text-teal-800' 
-                            : 'text-slate-700 hover:text-slate-900'
-                        }`}
-                      >
-                        <div className="flex items-center">
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate">{project.name}</div>
-                            <div className="text-xs text-slate-500">{project.progress}% 完成</div>
-                          </div>
-                          {currentProject?.id === project.id && (
-                            <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
-                          )}
+
+                  {projects.map(project => (
+                    <button
+                      key={project.id}
+                      onClick={() => handleProjectSelect(project)}
+                      className={`w-full px-3 py-2 text-left hover:bg-slate-50 transition-colors overflow-hidden ${
+                        currentProject.id === project.id
+                          ? 'bg-teal-50 text-teal-800'
+                          : 'text-slate-700 hover:text-slate-900'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">{project.name}</div>
+                          <div className="text-xs text-slate-500">{project.progress}% 完成</div>
+
                         </div>
                       </button>
                     ))}
@@ -261,7 +261,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
       {/* 點擊外部關閉專案列表 */}
       {showProjectList && (
         <div
-          className="fixed inset-0 z-40 bg-black/20"
+
+          className="fixed inset-0 z-40 bg-black/10"
+
           onClick={() => setShowProjectList(false)}
         ></div>
       )}
