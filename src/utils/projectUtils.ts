@@ -8,7 +8,7 @@ export const createEmptyProject = (name?: string): Project => {
   
   return {
     id: projectId,
-    name: name || 'Untitled Project',
+    name: name || `新專案 ${new Date().getTime()}`,
     description: '新建立的專案',
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 90 days later

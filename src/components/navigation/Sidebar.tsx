@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
   const handleCreateNewProject = () => {
     const projectName = prompt('請輸入新專案名稱：');
     if (projectName) {
-      createProject(projectName);
+      createProject(projectName.trim());
       setCurrentView('dashboard');
       setShowProjectList(false);
     }
@@ -50,6 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
 
   const handleProjectSelect = (project: any) => {
     setCurrentProject(project);
+    console.log('切換到專案:', project.name);
     setCurrentView('dashboard');
     setShowProjectList(false);
   };
@@ -161,7 +162,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                           <div className="text-sm font-medium truncate">{project.name}</div>
                           <div className="text-xs text-slate-500">{project.progress}% 完成</div>
                         </div>
-                        {currentProject.id === project.id && (
+                        {currentProject?.id === project.id && (
                           <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
                         )}
                       </div>

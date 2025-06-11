@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { Project, Task, Resource, ProjectState, CostRecord, Risk, UndoItem } from '../types/projectTypes';
-import { sampleProject } from '../data/sampleProject';
+// import { sampleProject } from '../data/sampleProject';
 import { createEmptyProject, calculateProjectProgress } from '../utils/projectUtils';
 import {
   saveAutoSnapshot,
@@ -55,8 +55,8 @@ const AUTO_SAVE_INTERVAL = 10 * 60 * 1000; // 10分鐘
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
-  const [projects, setProjects] = useState<Project[]>([sampleProject]);
-  const [currentProject, setCurrentProjectState] = useState<Project | null>(sampleProject);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [currentProject, setCurrentProjectState] = useState<Project | null>(null);
   const [undoStack, setUndoStack] = useState<UndoItem[]>([]);
   const [redoStack, setRedoStack] = useState<UndoItem[]>([]);
   const [projectState, setProjectState] = useState<ProjectState>({
@@ -68,6 +68,45 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     openedFrom: null
   });
 
+  // 初始化時載入保存的專案
+  useEffect(() => {
+    const loadSavedProjects = () => {
+      try {
+        const savedProjects = localStorage.getItem('saved_projects');
+        const savedCurrentProjectId = localStorage.getItem('current_project_id');
+        
+        if (savedProjects) {
+          const parsedProjects = JSON.parse(savedProjects);
+          setProjects(parsedProjects);
+          
+          // 恢復當前專案
+          if (savedCurrentProjectId) {
+            const currentProj = parsedProjects.find((p: Project) => p.id === savedCurrentProjectId);
+            if (currentProj) {
+              setCurrentProjectState(currentProj);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('載入保存的專案失敗:', error);
+      }
+    };
+
+    loadSavedProjects();
+  }, []);
+
+  // 保存專案到 localStorage
+  const saveProjectsToStorage = useCallback((projectsList: Project[], currentProjectId?: string) => {
+    try {
+      localStorage.setItem('saved_projects', JSON.stringify(projectsList));
+      if (currentProjectId) {
+        localStorage.setItem('current_project_id', currentProjectId);
+      }
+    } catch (error) {
+      console.error('保存專案失敗:', error);
+    }
+  }, []);
+
   // Undo/Redo 相關函數 - 提前定義
   const pushUndo = useCallback((item: UndoItem) => {
     setUndoStack(prev => [...prev.slice(0, 49), item]); // 限制堆疊大小為 50
@@ -76,15 +115,18 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
   // 設定當前專案並更新專案列表
   const setCurrentProject = useCallback((project: Project) => {
+    console.log('設定當前專案:', project.name);
     setCurrentProjectState(project);
     
     // 更新專案列表中的專案
     setProjects(prev => {
       const exists = prev.find(p => p.id === project.id);
+      const updatedProjects = exists 
+        ? prev.map(p => p.id === project.id ? project : p)
+        : [...prev, project];
       if (exists) {
-        return prev.map(p => p.id === project.id ? project : p);
-      } else {
-        return [...prev, project];
+        saveProjectsToStorage(updatedProjects, project.id);
+        return updatedProjects;
       }
     });
   }, []);
@@ -122,9 +164,14 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   // 建立新專案
   const createProject = useCallback((name?: string) => {
     const newProject = createEmptyProject(name);
+    console.log('建立新專案:', newProject.name, newProject.id);
     
     // 添加到專案列表
-    setProjects(prev => [...prev, newProject]);
+    setProjects(prev => {
+      const updatedProjects = [...prev, newProject];
+      saveProjectsToStorage(updatedProjects, newProject.id);
+      return updatedProjects;
+    });
     
     // 設為當前專案
     setCurrentProjectState(newProject);
@@ -144,8 +191,13 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       isTemporary: true
     });
 
+    // 立即保存到 localStorage
+    setTimeout(() => {
+      saveProjectsToStorage([...projects, newProject], newProject.id);
+    }, 100);
+
     console.log('新專案已建立:', newProject.name);
-  }, []);
+  }, [projects, saveProjectsToStorage]);
 
   // 更新專案
   const updateProject = useCallback((updatedProject: Project) => {
@@ -160,27 +212,37 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       updatedAt: now
     };
     
-    setProjects(prev => prev.map(p => p.id === finalProject.id ? finalProject : p));
+    setProjects(prev => {
+      const updatedProjects = prev.map(p => p.id === finalProject.id ? finalProject : p);
+      saveProjectsToStorage(updatedProjects, finalProject.id);
+      return updatedProjects;
+    });
     setCurrentProjectState(finalProject);
     
     // 更新狀態為已修改
     setProjectState(prev => transition(prev, 'edit'));
-  }, []);
+  }, [saveProjectsToStorage]);
 
   // 刪除專案
   const deleteProject = useCallback((projectId: string) => {
-    setProjects(prev => prev.filter(p => p.id !== projectId));
+    setProjects(prev => {
+      const updatedProjects = prev.filter(p => p.id !== projectId);
+      saveProjectsToStorage(updatedProjects);
+      return updatedProjects;
+    });
     
     if (currentProject?.id === projectId) {
       // 選擇另一個專案或設為 null
       const remainingProjects = projects.filter(p => p.id !== projectId);
       if (remainingProjects.length > 0) {
         setCurrentProjectState(remainingProjects[0]);
+        localStorage.setItem('current_project_id', remainingProjects[0].id);
       } else {
         setCurrentProjectState(null);
+        localStorage.removeItem('current_project_id');
       }
     }
-  }, [currentProject, projects]);
+  }, [currentProject, projects, saveProjectsToStorage]);
 
   // 新增任務
   const addTask = useCallback((task: Task) => {
