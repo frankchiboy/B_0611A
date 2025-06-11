@@ -74,16 +74,26 @@ export const WorkflowConverter: React.FC = () => {
   // 計算任務時程（拓撲排序 + FS 依賴）
   const calculateSchedule = (taskList: Task[]): Task[] => {
     const scheduledTasks: Task[] = [];
-    const processed = new Set<string>();
+    const visited = new Set<string>();
+    const recursionStack = new Set<string>();
     
     // 深度優先搜尋來計算每個任務的開始和結束時間
     const calculateTaskTime = (taskId: string): Task => {
-      if (processed.has(taskId)) {
+      // 檢查循環依賴
+      if (recursionStack.has(taskId)) {
+        throw new Error(`檢測到循環依賴，涉及任務 ${taskId}`);
+      }
+      
+      // 如果已經計算過，返回快取結果
+      if (visited.has(taskId)) {
         return scheduledTasks.find(t => t.id === taskId)!;
       }
 
       const task = taskList.find(t => t.id === taskId);
-      if (!task) throw new Error(`Task ${taskId} not found`);
+      if (!task) throw new Error(`找不到任務 ${taskId}`);
+
+      // 加入遞歸堆疊
+      recursionStack.add(taskId);
 
       let startTime = 0;
 
@@ -103,17 +113,30 @@ export const WorkflowConverter: React.FC = () => {
       };
 
       scheduledTasks.push(scheduledTask);
-      processed.add(taskId);
+      
+      // 從遞歸堆疊中移除並標記為已訪問
+      recursionStack.delete(taskId);
+      visited.add(taskId);
       
       return scheduledTask;
     };
 
     // 計算所有任務
-    taskList.forEach(task => {
-      if (!processed.has(task.id)) {
-        calculateTaskTime(task.id);
-      }
-    });
+    try {
+      taskList.forEach(task => {
+        if (!visited.has(task.id)) {
+          calculateTaskTime(task.id);
+        }
+      });
+    } catch (error) {
+      console.error('任務排程計算錯誤:', error);
+      // 返回基本排程作為備援
+      return taskList.map((task, index) => ({
+        ...task,
+        start: index * task.duration,
+        end: (index + 1) * task.duration
+      }));
+    }
 
     return scheduledTasks.sort((a, b) => (a.start || 0) - (b.start || 0));
   };
