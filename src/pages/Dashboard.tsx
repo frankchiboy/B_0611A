@@ -7,7 +7,7 @@ import { useProject } from '../context/ProjectContext';
 import { Bell, Calendar, Layers, TrendingUp, Anchor, ArrowRight } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
-  const { currentProject } = useProject();
+  const { currentProject, createProject } = useProject();
   
   if (!currentProject) {
     return (
@@ -20,7 +20,10 @@ export const Dashboard: React.FC = () => {
           </div>
           <h2 className="text-2xl font-display font-bold text-slate-800 mb-2">開始您的專案之旅</h2>
           <p className="text-slate-500 mb-6 max-w-md mx-auto">選擇或創建一個專案以啟動您的專業管理體驗</p>
-          <button className="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-navy-500 text-white rounded-full font-medium shadow-soft hover:from-teal-600 hover:to-navy-600 transition-colors">
+          <button
+            onClick={() => createProject()}
+            className="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-navy-500 text-white rounded-full font-medium shadow-soft hover:from-teal-600 hover:to-navy-600 transition-colors"
+          >
             創建新專案
           </button>
         </div>

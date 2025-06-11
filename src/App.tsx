@@ -3,6 +3,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ProjectProvider } from './context/ProjectContext';
 import { Sidebar } from './components/navigation/Sidebar';
 import { Header } from './components/navigation/Header';
+import { MainToolbar } from './components/toolbar/MainToolbar';
 
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const GanttView = lazy(() => import('./pages/GanttView').then(module => ({ default: module.GanttView })));
@@ -77,6 +78,7 @@ function App() {
             <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
             <div className="flex flex-col flex-1 overflow-hidden">
               <Header currentView={currentView} />
+              <MainToolbar />
               <main className="flex-1 overflow-auto p-0 relative bg-slate-50/50">
                 <Suspense fallback={
                   <div className="flex items-center justify-center h-full">

@@ -9,7 +9,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {
   const [expanded, setExpanded] = React.useState(true);
-  const { currentProject } = useProject();
+  const { currentProject, createProject } = useProject();
 
   const navItems = [
     { id: 'dashboard', label: '儀表板', icon: <LayoutDashboard size={20} />, category: 'main' },
@@ -93,10 +93,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
         {expanded && (
           <div className="flex items-center mb-4 px-3">
             <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">我的專案</h2>
-            <button className="ml-auto p-1 rounded-full hover:bg-slate-100 transition-colors text-slate-400">
+            <button
+              onClick={() => createProject()}
+              className="ml-auto p-1 rounded-full hover:bg-slate-100 transition-colors text-slate-400"
+            >
               <PlusCircle size={14} />
             </button>
-          </div>
+         </div>
         )}
         
         {expanded && currentProject && (

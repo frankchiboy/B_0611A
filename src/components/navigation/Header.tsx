@@ -8,7 +8,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ currentView }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const { currentProject } = useProject();
+  const { currentProject, createProject } = useProject();
   
   // View title mapping
   const viewTitles: Record<string, string> = {
@@ -63,7 +63,10 @@ export const Header: React.FC<HeaderProps> = ({ currentView }) => {
           <Calendar size={20} />
         </button>
         
-        <button className="ml-2 px-4 py-2 bg-gradient-to-r from-teal-500 to-navy-500 hover:from-teal-600 hover:to-navy-600 text-white rounded-full text-sm font-medium flex items-center transition-colors shadow-soft">
+        <button
+          onClick={() => createProject()}
+          className="ml-2 px-4 py-2 bg-gradient-to-r from-teal-500 to-navy-500 hover:from-teal-600 hover:to-navy-600 text-white rounded-full text-sm font-medium flex items-center transition-colors shadow-soft"
+        >
           <Plus size={16} className="mr-1.5" />
           <span>新建</span>
         </button>
