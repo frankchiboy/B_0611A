@@ -143,21 +143,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                 </div>
               </button>
 
-              {/* 專案列表下拉選單 */}
+              {/* 專案列表下拉選單 - 修復可見性 */}
               {showProjectList && (
-                <div className="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md rounded-lg shadow-xl border border-slate-200 py-2 z-[9999] max-h-64 overflow-y-auto">
-                  <div className="px-3 py-2 border-b border-slate-100">
-                    <h4 className="text-xs font-medium text-slate-700 uppercase">選擇專案</h4>
+                <div className="absolute top-full left-0 right-0 bg-white rounded-lg shadow-2xl border border-slate-200 py-2 z-[9999] max-h-64 overflow-y-auto">
+                  <div className="px-3 py-2 border-b border-slate-100 bg-slate-50">
+                    <h4 className="text-xs font-semibold text-slate-700 uppercase">選擇專案</h4>
                   </div>
                   
                   {projects.map(project => (
                     <button
                       key={project.id}
                       onClick={() => handleProjectSelect(project)}
-                      className={`w-full px-3 py-2 text-left hover:bg-slate-100 transition-colors ${
+                      className={`w-full px-3 py-2 text-left hover:bg-slate-50 transition-colors ${
                         currentProject.id === project.id 
-                          ? 'bg-teal-100 text-teal-800' 
-                          : 'text-slate-800'
+                          ? 'bg-teal-50 text-teal-800' 
+                          : 'text-slate-700 hover:text-slate-900'
                       }`}
                     >
                       <div className="flex items-center">
@@ -172,10 +172,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                     </button>
                   ))}
 
-                  <div className="border-t border-slate-100 mt-2 pt-2">
+                  <div className="border-t border-slate-100 mt-2 pt-2 bg-slate-50">
                     <button
                       onClick={handleCreateNewProject}
-                      className="w-full px-3 py-2 text-left text-sm text-teal-700 hover:bg-teal-100 transition-colors flex items-center font-medium"
+                      className="w-full px-3 py-2 text-left text-sm text-teal-700 hover:bg-teal-50 transition-colors flex items-center font-medium"
                     >
                       <PlusCircle size={14} className="mr-2" />
                       建立新專案
