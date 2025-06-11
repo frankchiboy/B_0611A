@@ -145,9 +145,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
 
               {/* 專案列表下拉選單 - 修復可見性 */}
               {showProjectList && (
-                <div className="absolute top-full left-0 right-0 z-[9999] max-h-64 overflow-y-auto">
-                  <div className="bg-white rounded-lg shadow-2xl border border-slate-300 overflow-hidden">
-                    <div className="px-3 py-2 border-b border-slate-200 bg-slate-100">
+
+                <div className="absolute top-full left-0 right-0 bg-white/95 rounded-lg shadow-2xl border border-slate-200 py-2 z-[9999] max-h-64 overflow-y-auto">
+                  <div className="px-3 py-2 border-b border-slate-100 bg-slate-50">
+
                     <h4 className="text-xs font-semibold text-slate-700 uppercase">選擇專案</h4>
                   </div>
                   
@@ -296,8 +297,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
 
       {/* 點擊外部關閉專案列表 */}
       {showProjectList && (
-        <div 
-          className="fixed inset-0 z-[9998] bg-black bg-opacity-10" 
+
+        <div
+          className="fixed inset-0 z-40 bg-black/20"
+
           onClick={() => setShowProjectList(false)}
         ></div>
       )}
