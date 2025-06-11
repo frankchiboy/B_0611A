@@ -145,41 +145,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
 
               {/* 專案列表下拉選單 */}
               {showProjectList && (
-                <div className="absolute top-full left-0 right-0 bg-white rounded-lg shadow-2xl border-4 border-black py-3 z-[9999] max-h-64 overflow-y-auto backdrop-blur-sm">
+                <div className="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md rounded-lg shadow-xl border border-slate-200 py-2 z-[9999] max-h-64 overflow-y-auto">
                   <div className="px-3 py-2 border-b border-slate-100">
-                    <h4 className="text-sm font-black text-black uppercase tracking-wide">選擇專案</h4>
+                    <h4 className="text-xs font-medium text-slate-700 uppercase">選擇專案</h4>
                   </div>
                   
                   {projects.map(project => (
                     <button
                       key={project.id}
                       onClick={() => handleProjectSelect(project)}
-                      className={`w-full px-4 py-4 text-left transition-colors border-b-2 border-slate-200 last:border-b-0 ${
+                      className={`w-full px-3 py-2 text-left hover:bg-slate-100 transition-colors ${
                         currentProject.id === project.id 
-                          ? 'bg-black text-white font-black' 
-                          : 'text-black font-bold hover:bg-gray-200 hover:text-black'
+                          ? 'bg-teal-100 text-teal-800' 
+                          : 'text-slate-800'
                       }`}
                     >
                       <div className="flex items-center">
                         <div className="flex-1 min-w-0">
-                          <div className="text-base font-black truncate">{project.name}</div>
-                          <div className={`text-sm font-bold ${
-                            currentProject?.id === project.id ? 'text-white' : 'text-gray-700'
-                          }`}>{project.progress}% 完成</div>
+                          <div className="text-sm font-medium truncate">{project.name}</div>
+                          <div className="text-xs text-slate-500">{project.progress}% 完成</div>
                         </div>
                         {currentProject?.id === project.id && (
-                          <div className="w-4 h-4 bg-white rounded-full border-2 border-white"></div>
+                          <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
                         )}
                       </div>
                     </button>
                   ))}
 
-                  <div className="border-t-4 border-black mt-2 pt-3 bg-gray-100">
+                  <div className="border-t border-slate-100 mt-2 pt-2">
                     <button
                       onClick={handleCreateNewProject}
-                      className="w-full px-4 py-4 text-left text-base text-black hover:bg-gray-300 transition-colors flex items-center font-black"
+                      className="w-full px-3 py-2 text-left text-sm text-teal-700 hover:bg-teal-100 transition-colors flex items-center font-medium"
                     >
-                      <PlusCircle size={20} className="mr-3 font-bold" />
+                      <PlusCircle size={14} className="mr-2" />
                       建立新專案
                     </button>
                   </div>
