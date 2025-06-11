@@ -75,14 +75,18 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         const savedProjects = localStorage.getItem('saved_projects');
         const savedCurrentProjectId = localStorage.getItem('current_project_id');
         
+        console.log('載入保存的專案:', savedProjects ? 'found' : 'not found');
+        
         if (savedProjects) {
           const parsedProjects = JSON.parse(savedProjects);
+          console.log('解析的專案數量:', parsedProjects.length);
           setProjects(parsedProjects);
           
           // 恢復當前專案
           if (savedCurrentProjectId) {
             const currentProj = parsedProjects.find((p: Project) => p.id === savedCurrentProjectId);
             if (currentProj) {
+              console.log('恢復當前專案:', currentProj.name);
               setCurrentProjectState(currentProj);
             }
           }
@@ -102,6 +106,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       if (currentProjectId) {
         localStorage.setItem('current_project_id', currentProjectId);
       }
+      console.log('專案已保存到 localStorage:', projectsList.length, '個專案');
     } catch (error) {
       console.error('保存專案失敗:', error);
     }
@@ -124,12 +129,11 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       const updatedProjects = exists 
         ? prev.map(p => p.id === project.id ? project : p)
         : [...prev, project];
-      if (exists) {
-        saveProjectsToStorage(updatedProjects, project.id);
-        return updatedProjects;
-      }
+      
+      saveProjectsToStorage(updatedProjects, project.id);
+      return updatedProjects;
     });
-  }, []);
+  }, [saveProjectsToStorage]);
 
   // 初始化自動儲存
   useEffect(() => {
@@ -166,15 +170,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const newProject = createEmptyProject(name);
     console.log('建立新專案:', newProject.name, newProject.id);
     
-    // 添加到專案列表
-    setProjects(prev => {
-      const updatedProjects = [...prev, newProject];
-      saveProjectsToStorage(updatedProjects, newProject.id);
-      return updatedProjects;
-    });
-    
-    // 設為當前專案
-    setCurrentProjectState(newProject);
+    // 先更新專案列表
+    setProjects(prev => [...prev, newProject]);
     
     // 更新專案狀態
     setProjectState(prev => transition(prev, 'initialize'));
@@ -182,6 +179,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     // 清空 undo/redo 堆疊
     setUndoStack([]);
     setRedoStack([]);
+    
+    // 設為當前專案
+    setCurrentProjectState(newProject);
     
     // 更新最近專案列表
     updateRecentProjects({
@@ -191,13 +191,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       isTemporary: true
     });
 
-    // 立即保存到 localStorage
-    setTimeout(() => {
-      saveProjectsToStorage([...projects, newProject], newProject.id);
-    }, 100);
-
     console.log('新專案已建立:', newProject.name);
-  }, [projects, saveProjectsToStorage]);
+  }, []);
 
   // 更新專案
   const updateProject = useCallback((updatedProject: Project) => {
