@@ -170,11 +170,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium truncate">{project.name}</div>
                           <div className="text-xs text-slate-500">{project.progress}% 完成</div>
-
                         </div>
-                      </button>
-                    ))}
-                  </div>
+                      </div>
+                    </button>
+                  ))}
 
                   <div className="border-t border-slate-200 bg-slate-50 rounded-b-xl">
                     <button
