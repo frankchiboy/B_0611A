@@ -14,7 +14,12 @@ import {
   Anchor,
   Menu,
   X,
-  Workflow
+  Workflow,
+  Layers,
+  FileSpreadsheet,
+  Activity,
+  Sliders,
+  FileTemplate
 } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
 
@@ -28,21 +33,64 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
   const { currentProject } = useProject();
 
   const navItems = [
-    { id: 'dashboard', label: '儀表板', icon: <LayoutDashboard size={20} /> },
-    { id: 'gantt', label: '甘特圖', icon: <GanttChart size={20} /> },
-    { id: 'tasks', label: '任務', icon: <CheckSquare size={20} /> },
-    { id: 'resources', label: '資源', icon: <Users size={20} /> },
-    { id: 'costs', label: '成本', icon: <Coins size={20} /> },
-    { id: 'risks', label: '風險', icon: <AlertTriangle size={20} /> },
-    { id: 'workflow', label: '工作流程', icon: <Workflow size={20} /> },
-    { id: 'snapshots', label: '備份', icon: <Archive size={20} /> },
-    { id: 'recent', label: '最近', icon: <Clock size={20} /> },
-    { id: 'reports', label: '報告', icon: <BarChart4 size={20} /> },
-    { id: 'settings', label: '設定', icon: <Settings size={20} /> },
+    { id: 'dashboard', label: '儀表板', icon: <LayoutDashboard size={20} />, category: 'main' },
+    { id: 'gantt', label: '甘特圖', icon: <GanttChart size={20} />, category: 'main' },
+    { id: 'tasks', label: '任務', icon: <CheckSquare size={20} />, category: 'main' },
+    { id: 'resources', label: '資源', icon: <Users size={20} />, category: 'main' },
+    
+    // 進階功能分組
+    { id: 'wbs', label: 'WBS', icon: <Layers size={20} />, category: 'advanced' },
+    { id: 'resource-worksheet', label: '資源工作表', icon: <FileSpreadsheet size={20} />, category: 'advanced' },
+    { id: 'project-tracking', label: '專案追蹤', icon: <Activity size={20} />, category: 'advanced' },
+    { id: 'custom-fields', label: '自訂欄位', icon: <Sliders size={20} />, category: 'advanced' },
+    { id: 'templates', label: '專案範本', icon: <FileTemplate size={20} />, category: 'advanced' },
+    
+    // 其他功能
+    { id: 'costs', label: '成本', icon: <Coins size={20} />, category: 'other' },
+    { id: 'risks', label: '風險', icon: <AlertTriangle size={20} />, category: 'other' },
+    { id: 'workflow', label: '工作流程', icon: <Workflow size={20} />, category: 'other' },
+    { id: 'snapshots', label: '備份', icon: <Archive size={20} />, category: 'other' },
+    { id: 'recent', label: '最近', icon: <Clock size={20} />, category: 'other' },
+    { id: 'reports', label: '報告', icon: <BarChart4 size={20} />, category: 'other' },
+    { id: 'settings', label: '設定', icon: <Settings size={20} />, category: 'other' },
   ];
 
   const toggleSidebar = () => {
     setExpanded(!expanded);
+  };
+
+  const renderNavSection = (category: string, title: string) => {
+    const items = navItems.filter(item => item.category === category);
+    
+    return (
+      <div className="mb-4">
+        {expanded && (
+          <div className="px-3 mb-2">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{title}</h3>
+          </div>
+        )}
+        <ul className="space-y-1">
+          {items.map((item) => (
+            <li key={item.id}>
+              <button
+                onClick={() => setCurrentView(item.id)}
+                className={`flex items-center w-full px-3 py-2.5 rounded-xl text-sm transition-all ${
+                  currentView === item.id
+                    ? 'bg-gradient-soft from-navy-50 via-teal-50 to-navy-50 text-navy-700 font-medium shadow-soft'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                }`}
+                title={!expanded ? item.label : undefined}
+              >
+                <span className={`${expanded ? 'mr-3' : 'mx-auto'} ${currentView === item.id ? 'text-teal-600' : 'text-slate-400'}`}>
+                  {item.icon}
+                </span>
+                {expanded && <span>{item.label}</span>}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
   };
 
   return (
@@ -86,24 +134,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
         )}
       </div>
       
-      <nav className="relative z-10 flex-1 px-3 mt-2">
-        <ul className="space-y-1">
-          {navItems.map((item) => (
-            <li key={item.id}>
-              <button
-                onClick={() => setCurrentView(item.id)}
-                className={`flex items-center w-full px-3 py-2.5 rounded-xl text-sm transition-all ${
-                  currentView === item.id
-                    ? 'bg-gradient-soft from-navy-50 via-teal-50 to-navy-50 text-navy-700 font-medium shadow-soft'
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-                }`}
-              >
-                <span className={`${expanded ? 'mr-3' : 'mx-auto'} ${currentView === item.id ? 'text-teal-600' : 'text-slate-400'}`}>{item.icon}</span>
-                {expanded && <span>{item.label}</span>}
-              </button>
-            </li>
-          ))}
-        </ul>
+      <nav className="relative z-10 flex-1 px-3 mt-2 overflow-y-auto">
+        {renderNavSection('main', '核心功能')}
+        {renderNavSection('advanced', '進階工具')}
+        {renderNavSection('other', '其他功能')}
       </nav>
       
       <div className="relative z-10 mt-auto p-4 border-t border-slate-100">

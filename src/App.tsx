@@ -15,6 +15,14 @@ const RecentProjectsView = lazy(() => import('./pages/RecentProjectsView').then(
 const ReportsView = lazy(() => import('./pages/ReportsView'));
 const Settings = lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
 const WorkflowConverter = lazy(() => import('./pages/WorkflowConverter').then(module => ({ default: module.WorkflowConverter })));
+
+// 新增的進階功能頁面
+const WorkBreakdownStructure = lazy(() => import('./pages/WorkBreakdownStructure').then(module => ({ default: module.WorkBreakdownStructure })));
+const ResourceWorksheet = lazy(() => import('./pages/ResourceWorksheet').then(module => ({ default: module.ResourceWorksheet })));
+const ProjectTracking = lazy(() => import('./pages/ProjectTracking').then(module => ({ default: module.ProjectTracking })));
+const CustomFields = lazy(() => import('./pages/CustomFields').then(module => ({ default: module.CustomFields })));
+const ProjectTemplates = lazy(() => import('./pages/ProjectTemplates').then(module => ({ default: module.ProjectTemplates })));
+
 const WelcomeOverlay = lazy(() => import('./components/overlays/WelcomeOverlay'));
 
 function App() {
@@ -43,6 +51,16 @@ function App() {
         return <ReportsView />;
       case 'workflow':
         return <WorkflowConverter />;
+      case 'wbs':
+        return <WorkBreakdownStructure />;
+      case 'resource-worksheet':
+        return <ResourceWorksheet />;
+      case 'project-tracking':
+        return <ProjectTracking />;
+      case 'custom-fields':
+        return <CustomFields />;
+      case 'templates':
+        return <ProjectTemplates />;
       case 'settings':
         return <Settings />;
       default:
