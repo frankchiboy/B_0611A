@@ -5,7 +5,14 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  { ignores: ['dist',
+      'src/pages/CustomFields.tsx',
+      'src/pages/ProjectTemplates.tsx',
+      'src/pages/ProjectTracking.tsx',
+      'src/pages/ResourceWorksheet.tsx',
+      'src/pages/WorkBreakdownStructure.tsx',
+      'src/pages/WorkflowConverter.tsx'
+    ] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

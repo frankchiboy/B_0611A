@@ -177,7 +177,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     };
     
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   // 更新任務
   const updateTask = useCallback((updatedTask: Task) => {
@@ -200,7 +200,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     };
     
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   // 刪除任務
   const deleteTask = useCallback((taskId: string) => {
@@ -223,7 +223,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     };
     
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   // 新增資源
   const addResource = useCallback((resource: Resource) => {
@@ -243,7 +243,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     };
     
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   // 更新資源
   const updateResource = useCallback((updatedResource: Resource) => {
@@ -266,7 +266,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     };
     
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   // 刪除資源
   const deleteResource = useCallback((resourceId: string) => {
@@ -289,63 +289,124 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     };
     
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   // 新增成本紀錄
   const addCost = useCallback((cost: CostRecord) => {
     if (!currentProject) return;
+
+    // 保存舊狀態用於 undo
+    pushUndo({
+      type: 'add-cost',
+      targetId: cost.id,
+      beforeState: null,
+      afterState: cost
+    });
+
     const updatedProject = {
       ...currentProject,
       costs: [...currentProject.costs, cost]
     };
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   const updateCost = useCallback((cost: CostRecord) => {
     if (!currentProject) return;
+
+    const oldCost = currentProject.costs.find(c => c.id === cost.id);
+    if (oldCost) {
+      pushUndo({
+        type: 'update-cost',
+        targetId: cost.id,
+        beforeState: oldCost,
+        afterState: cost
+      });
+    }
+
     const updatedProject = {
       ...currentProject,
       costs: currentProject.costs.map(c => c.id === cost.id ? cost : c)
     };
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   const deleteCost = useCallback((id: string) => {
     if (!currentProject) return;
+
+    const oldCost = currentProject.costs.find(c => c.id === id);
+    if (oldCost) {
+      pushUndo({
+        type: 'delete-cost',
+        targetId: id,
+        beforeState: oldCost,
+        afterState: null
+      });
+    }
+
     const updatedProject = {
       ...currentProject,
       costs: currentProject.costs.filter(c => c.id !== id)
     };
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   // 風險紀錄
   const addRisk = useCallback((risk: Risk) => {
     if (!currentProject) return;
+
+    pushUndo({
+      type: 'add-risk',
+      targetId: risk.id,
+      beforeState: null,
+      afterState: risk
+    });
+
     const updatedProject = {
       ...currentProject,
       risks: [...currentProject.risks, risk]
     };
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   const updateRisk = useCallback((risk: Risk) => {
     if (!currentProject) return;
+
+    const oldRisk = currentProject.risks.find(r => r.id === risk.id);
+    if (oldRisk) {
+      pushUndo({
+        type: 'update-risk',
+        targetId: risk.id,
+        beforeState: oldRisk,
+        afterState: risk
+      });
+    }
+
     const updatedProject = {
       ...currentProject,
       risks: currentProject.risks.map(r => r.id === risk.id ? risk : r)
     };
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   const deleteRisk = useCallback((id: string) => {
     if (!currentProject) return;
+
+    const oldRisk = currentProject.risks.find(r => r.id === id);
+    if (oldRisk) {
+      pushUndo({
+        type: 'delete-risk',
+        targetId: id,
+        beforeState: oldRisk,
+        afterState: null
+      });
+    }
+
     const updatedProject = {
       ...currentProject,
       risks: currentProject.risks.filter(r => r.id !== id)
     };
     updateProject(updatedProject);
-  }, [currentProject, updateProject]);
+  }, [currentProject, updateProject, pushUndo]);
 
   // 儲存專案
   const saveProject = useCallback(() => {
@@ -516,6 +577,52 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
           resources: [...currentProject.resources, lastAction.beforeState]
         });
         break;
+
+      case 'add-cost':
+        updateProject({
+          ...currentProject,
+          costs: currentProject.costs.filter(c => c.id !== lastAction.targetId)
+        });
+        break;
+
+      case 'update-cost':
+        updateProject({
+          ...currentProject,
+          costs: currentProject.costs.map(c =>
+            c.id === lastAction.targetId ? lastAction.beforeState : c
+          )
+        });
+        break;
+
+      case 'delete-cost':
+        updateProject({
+          ...currentProject,
+          costs: [...currentProject.costs, lastAction.beforeState]
+        });
+        break;
+
+      case 'add-risk':
+        updateProject({
+          ...currentProject,
+          risks: currentProject.risks.filter(r => r.id !== lastAction.targetId)
+        });
+        break;
+
+      case 'update-risk':
+        updateProject({
+          ...currentProject,
+          risks: currentProject.risks.map(r =>
+            r.id === lastAction.targetId ? lastAction.beforeState : r
+          )
+        });
+        break;
+
+      case 'delete-risk':
+        updateProject({
+          ...currentProject,
+          risks: [...currentProject.risks, lastAction.beforeState]
+        });
+        break;
     }
   }, [undoStack, currentProject, updateProject]);
 
@@ -581,6 +688,52 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         updateProject({
           ...currentProject,
           resources: currentProject.resources.filter(r => r.id !== lastAction.targetId)
+        });
+        break;
+
+      case 'add-cost':
+        updateProject({
+          ...currentProject,
+          costs: [...currentProject.costs, lastAction.afterState]
+        });
+        break;
+
+      case 'update-cost':
+        updateProject({
+          ...currentProject,
+          costs: currentProject.costs.map(c =>
+            c.id === lastAction.targetId ? lastAction.afterState : c
+          )
+        });
+        break;
+
+      case 'delete-cost':
+        updateProject({
+          ...currentProject,
+          costs: currentProject.costs.filter(c => c.id !== lastAction.targetId)
+        });
+        break;
+
+      case 'add-risk':
+        updateProject({
+          ...currentProject,
+          risks: [...currentProject.risks, lastAction.afterState]
+        });
+        break;
+
+      case 'update-risk':
+        updateProject({
+          ...currentProject,
+          risks: currentProject.risks.map(r =>
+            r.id === lastAction.targetId ? lastAction.afterState : r
+          )
+        });
+        break;
+
+      case 'delete-risk':
+        updateProject({
+          ...currentProject,
+          risks: currentProject.risks.filter(r => r.id !== lastAction.targetId)
         });
         break;
     }
