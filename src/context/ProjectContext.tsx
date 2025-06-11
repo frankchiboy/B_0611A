@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { Project, Task, Resource, ProjectState, CostRecord, Risk, UndoItem } from '../types/projectTypes';
-// import { sampleProject } from '../data/sampleProject';
+import { sampleProject } from '../data/sampleProject';
 import { createEmptyProject, calculateProjectProgress } from '../utils/projectUtils';
 import {
   saveAutoSnapshot,
