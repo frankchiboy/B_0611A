@@ -1,18 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Project, Task, Resource, Team, Milestone, Budget, BudgetCategory } from '../types/projectTypes';
+import { Project, Task, Resource, Milestone, Team, Budget, CostRecord, Risk, DashboardMetrics } from '../types/projectTypes';
 
-// 創建新的空白專案
-export const createEmptyProject = (name: string = 'Untitled Project'): Project => {
-  const today = new Date();
-  const endDate = new Date();
-  endDate.setMonth(today.getMonth() + 3); // 預設3個月專案期間
+// 建立空白專案
+export const createEmptyProject = (name?: string): Project => {
+  const projectId = uuidv4();
+  const now = new Date().toISOString();
   
   return {
-    id: uuidv4(),
-    name,
-    description: '',
-    startDate: today.toISOString().split('T')[0],
-    endDate: endDate.toISOString().split('T')[0],
+    id: projectId,
+    name: name || 'Untitled Project',
+    description: '新建立的專案',
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 90 days later
     status: 'planning',
     progress: 0,
     tasks: [],
@@ -22,35 +21,59 @@ export const createEmptyProject = (name: string = 'Untitled Project'): Project =
     costs: [],
     risks: [],
     budget: {
-      total: 0,
+      total: 100000,
       spent: 0,
-      remaining: 0,
+      remaining: 100000,
       currency: 'TWD',
-      categories: []
+      categories: [
+        {
+          id: uuidv4(),
+          name: '人事費用',
+          planned: 60000,
+          actual: 0
+        },
+        {
+          id: uuidv4(),
+          name: '設備費用',
+          planned: 25000,
+          actual: 0
+        },
+        {
+          id: uuidv4(),
+          name: '其他費用',
+          planned: 15000,
+          actual: 0
+        }
+      ]
     },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: now,
+    updatedAt: now
   };
 };
 
-// 創建新任務
+// 建立新任務
 export const createTask = (
   projectId: string,
   name: string,
   startDate: string,
-  endDate: string
+  endDate: string,
+  description?: string
 ): Task => {
-  const startDateObj = new Date(startDate);
-  const endDateObj = new Date(endDate);
-  const durationDays = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const taskId = uuidv4();
+  const now = new Date().toISOString();
+  
+  // 計算工期
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   
   return {
-    id: uuidv4(),
+    id: taskId,
     name,
-    description: '',
+    description: description || '',
     startDate,
     endDate,
-    duration: durationDays,
+    duration: Math.max(1, duration),
     progress: 0,
     status: 'not-started',
     priority: 'medium',
@@ -59,128 +82,103 @@ export const createTask = (
     isMilestone: false,
     notes: '',
     attachments: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: now,
+    updatedAt: now
   };
 };
 
-// 創建里程碑
-export const createMilestone = (
-  name: string,
-  date: string,
-  description: string = ''
-): Milestone => {
+// 建立新資源
+export const createResource = (name: string, type: 'human' | 'material' | 'equipment'): Resource => {
+  const resourceId = uuidv4();
+  const now = new Date().toISOString();
+  
   return {
-    id: uuidv4(),
+    id: resourceId,
     name,
-    description,
+    type,
+    cost: type === 'human' ? 1000 : 500, // 預設時薪或單價
+    availability: type === 'human' ? [
+      { dayOfWeek: 1, startTime: '09:00', endTime: '17:00' },
+      { dayOfWeek: 2, startTime: '09:00', endTime: '17:00' },
+      { dayOfWeek: 3, startTime: '09:00', endTime: '17:00' },
+      { dayOfWeek: 4, startTime: '09:00', endTime: '17:00' },
+      { dayOfWeek: 5, startTime: '09:00', endTime: '17:00' }
+    ] : [],
+    utilization: 0,
+    createdAt: now,
+    updatedAt: now
+  };
+};
+
+// 建立新里程碑
+export const createMilestone = (name: string, date: string, description?: string): Milestone => {
+  const milestoneId = uuidv4();
+  const now = new Date().toISOString();
+  
+  return {
+    id: milestoneId,
+    name,
+    description: description || '',
     date,
     status: 'upcoming',
     taskIds: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: now,
+    updatedAt: now
   };
 };
 
-// 創建新資源
-export const createResource = (
-  name: string,
-  type: 'human' | 'material' | 'equipment',
-  role?: string
-): Resource => {
-  // 預設週一至週五工作時間
-  const defaultAvailability = [
-    { dayOfWeek: 1, startTime: '09:00', endTime: '17:00' },
-    { dayOfWeek: 2, startTime: '09:00', endTime: '17:00' },
-    { dayOfWeek: 3, startTime: '09:00', endTime: '17:00' },
-    { dayOfWeek: 4, startTime: '09:00', endTime: '17:00' },
-    { dayOfWeek: 5, startTime: '09:00', endTime: '17:00' }
-  ];
+// 建立新團隊
+export const createTeam = (name: string, description?: string): Team => {
+  const teamId = uuidv4();
+  const now = new Date().toISOString();
   
   return {
-    id: uuidv4(),
+    id: teamId,
     name,
-    type,
-    email: '',
-    phone: '',
-    role: role || '',
-    skills: [],
-    cost: 0,
-    availability: defaultAvailability,
-    utilization: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    description: description || '',
+    members: [],
+    createdAt: now,
+    updatedAt: now
   };
 };
 
-// 創建新團隊
-export const createTeam = (
-  name: string,
-  description: string = '',
-  members: string[] = []
-): Team => {
+// 建立新成本紀錄
+export const createCostRecord = (taskId: string): CostRecord => {
+  const costId = uuidv4();
+  
   return {
-    id: uuidv4(),
+    id: costId,
+    taskId,
+    amount: 0,
+    category: '其他',
+    currency: 'TWD',
+    date: new Date().toISOString().split('T')[0],
+    invoiceId: '',
+    status: 'pending',
+    note: ''
+  };
+};
+
+// 建立新風險
+export const createRisk = (name: string): Risk => {
+  const riskId = uuidv4();
+  const now = new Date().toISOString();
+  
+  return {
+    id: riskId,
     name,
-    description,
-    members,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    description: '',
+    probability: 'medium',
+    impact: 'medium',
+    status: 'identified',
+    mitigation: '',
+    owner: '',
+    createdAt: now,
+    updatedAt: now
   };
 };
 
-// 創建預算類別
-export const createBudgetCategory = (
-  name: string,
-  planned: number
-): BudgetCategory => {
-  return {
-    id: uuidv4(),
-    name,
-    planned,
-    actual: 0
-  };
-};
-
-// 初始化專案預算
-export const initializeProjectBudget = (total: number, currency: string = 'TWD'): Budget => {
-  return {
-    total,
-    spent: 0,
-    remaining: total,
-    currency,
-    categories: []
-  };
-};
-
-// 創建成本紀錄
-export const createCostRecord = (taskId: string): CostRecord => ({
-  id: uuidv4(),
-  taskId,
-  amount: 0,
-  category: '',
-  currency: 'TWD',
-  date: new Date().toISOString().split('T')[0],
-  invoiceId: '',
-  status: 'pending',
-  note: ''
-});
-
-// 創建風險紀錄
-export const createRisk = (name: string): Risk => ({
-  id: uuidv4(),
-  name,
-  description: '',
-  probability: 'low',
-  impact: 'low',
-  status: 'identified',
-  mitigation: '',
-  owner: '',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-});
-
-// 計算任務完成進度
+// 計算專案進度
 export const calculateProjectProgress = (tasks: Task[]): number => {
   if (tasks.length === 0) return 0;
   
@@ -188,212 +186,210 @@ export const calculateProjectProgress = (tasks: Task[]): number => {
   return Math.round(totalProgress / tasks.length);
 };
 
-// 計算資源利用率
-export const calculateResourceUtilization = (resource: Resource, tasks: Task[]): number => {
-  const assignedTasks = tasks.filter(task => task.assignedTo.includes(resource.id));
-  if (assignedTasks.length === 0) return 0;
+// 計算專案統計
+export const getDashboardMetrics = (project: Project): DashboardMetrics => {
+  const tasks = project.tasks;
+  const resources = project.resources;
+  const risks = project.risks;
+  const milestones = project.milestones;
   
-  // 計算總工作天數
-  const totalWorkDays = assignedTasks.reduce((sum, task) => sum + task.duration, 0);
+  // 任務完成率
+  const completedTasks = tasks.filter(task => task.status === 'completed').length;
+  const taskCompletion = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0;
   
-  // 計算資源可用工作天數（以30天為一個月）
-  const availableDaysPerWeek = resource.availability.length;
-  const availableDaysPerMonth = availableDaysPerWeek * 4.3;
+  // 即將到來的里程碑
+  const upcomingMilestones = milestones.filter(milestone => {
+    const milestoneDate = new Date(milestone.date);
+    const today = new Date();
+    const daysUntil = (milestoneDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+    return milestone.status === 'upcoming' && daysUntil <= 30 && daysUntil > 0;
+  }).length;
   
-  // 假設任務平均分配在3個月內
-  const utilizationRate = Math.min(100, Math.round((totalWorkDays / (availableDaysPerMonth * 3)) * 100));
+  // 平均資源利用率
+  const resourceUtilization = resources.length > 0 
+    ? Math.round(resources.reduce((sum, res) => sum + res.utilization, 0) / resources.length)
+    : 0;
   
-  return utilizationRate;
-};
-
-// 依據任務依賴關係重新排程
-export const rescheduleTasksByDependencies = (tasks: Task[]): Task[] => {
-  const updatedTasks = [...tasks];
+  // 預算狀態
+  const budgetPercentage = Math.round((project.budget.spent / project.budget.total) * 100);
+  const budgetStatus: 'under' | 'on-track' | 'over' = 
+    budgetPercentage < 80 ? 'under' : 
+    budgetPercentage <= 100 ? 'on-track' : 'over';
   
-  // 按照依賴關係排序
-  const sorted = sortTasksByDependencies(updatedTasks);
-  
-  // 更新任務開始時間
-  sorted.forEach(task => {
-    if (task.dependencies.length > 0) {
-      const dependentTasks = task.dependencies.map(depId => 
-        updatedTasks.find(t => t.id === depId)
-      ).filter(t => t !== undefined) as Task[];
-      
-      if (dependentTasks.length > 0) {
-        // 找出所有依賴任務的最晚結束日期
-        const latestEndDate = new Date(Math.max(
-          ...dependentTasks.map(t => new Date(t.endDate).getTime())
-        ));
-        
-        // 設置當前任務的開始日期為依賴任務的結束日期後一天
-        const newStartDate = new Date(latestEndDate);
-        newStartDate.setDate(newStartDate.getDate() + 1);
-        
-        // 更新結束日期，保持持續時間不變
-        const newEndDate = new Date(newStartDate);
-        newEndDate.setDate(newStartDate.getDate() + task.duration - 1);
-        
-        // 更新任務的日期
-        const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
-        if (taskIndex !== -1) {
-          updatedTasks[taskIndex] = {
-            ...task,
-            startDate: newStartDate.toISOString().split('T')[0],
-            endDate: newEndDate.toISOString().split('T')[0]
-          };
-        }
-      }
-    }
-  });
-  
-  return updatedTasks;
-};
-
-// 按照依賴關係排序任務
-export const sortTasksByDependencies = (tasks: Task[]): Task[] => {
-  const result: Task[] = [];
-  const visited = new Set<string>();
-  const temporary = new Set<string>();
-  
-  // 深度優先搜尋
-  const visit = (taskId: string) => {
-    if (visited.has(taskId)) return;
-    if (temporary.has(taskId)) {
-      console.warn('發現循環依賴:', taskId);
-      return;
-    }
-    
-    temporary.add(taskId);
-    
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
-      task.dependencies.forEach(depId => visit(depId));
-      
-      visited.add(taskId);
-      temporary.delete(taskId);
-      result.push(task);
-    }
+  // 風險統計
+  const risksCount = {
+    low: risks.filter(risk => risk.impact === 'low' && risk.probability === 'low').length,
+    medium: risks.filter(risk => 
+      (risk.impact === 'medium' && risk.probability === 'low') ||
+      (risk.impact === 'low' && risk.probability === 'medium') ||
+      (risk.impact === 'medium' && risk.probability === 'medium')
+    ).length,
+    high: risks.filter(risk => 
+      risk.impact === 'high' || risk.probability === 'high'
+    ).length
   };
   
-  // 處理所有任務
+  return {
+    taskCompletion,
+    upcomingMilestones,
+    resourceUtilization,
+    budgetStatus: {
+      percentage: budgetPercentage,
+      status: budgetStatus
+    },
+    risksCount
+  };
+};
+
+// 計算任務關鍵路徑
+export const calculateCriticalPath = (tasks: Task[]): Task[] => {
+  // 簡化版的關鍵路徑計算
+  // 實際應用中需要更複雜的 CPM 算法
+  
+  const criticalTasks: Task[] = [];
+  const taskMap = new Map<string, Task>();
+  
+  // 建立任務映射
   tasks.forEach(task => {
-    if (!visited.has(task.id)) {
-      visit(task.id);
-    }
+    taskMap.set(task.id, task);
   });
   
-  return result;
-};
-
-// 檢查新增依賴關係是否會導致循環依賴
-export const wouldCreateCircularDependency = (
-  tasks: Task[],
-  taskId: string,
-  dependencyId: string
-): boolean => {
-  // 檢查 dependencyId 是否已經依賴於 taskId（直接或間接）
-  const dependencyChain = new Set<string>();
+  // 找出沒有依賴的起始任務
+  const startTasks = tasks.filter(task => task.dependencies.length === 0);
   
-  const checkDependencies = (currentTaskId: string): boolean => {
-    if (currentTaskId === taskId) return true;
-    if (dependencyChain.has(currentTaskId)) return false;
+  // 遞歸計算最長路徑
+  const findLongestPath = (task: Task, visited: Set<string>): number => {
+    if (visited.has(task.id)) return 0; // 避免循環依賴
     
-    dependencyChain.add(currentTaskId);
+    visited.add(task.id);
     
-    const currentTask = tasks.find(t => t.id === currentTaskId);
-    if (!currentTask) return false;
+    let maxDuration = task.duration;
     
-    for (const depId of currentTask.dependencies) {
-      if (checkDependencies(depId)) return true;
+    // 找出依賴此任務的後續任務
+    const dependentTasks = tasks.filter(t => t.dependencies.includes(task.id));
+    
+    for (const depTask of dependentTasks) {
+      const pathDuration = task.duration + findLongestPath(depTask, new Set(visited));
+      maxDuration = Math.max(maxDuration, pathDuration);
     }
     
-    return false;
+    return maxDuration;
   };
   
-  return checkDependencies(dependencyId);
-};
-
-// 獲取任務的關鍵路徑
-export const getCriticalPath = (tasks: Task[]): string[] => {
-  // 按結束日期排序
-  const sortedTasks = [...tasks].sort(
-    (a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
-  );
+  // 找出關鍵路徑
+  let maxPathDuration = 0;
+  let criticalStartTask: Task | null = null;
   
-  if (sortedTasks.length === 0) return [];
-  
-  // 找出結束最晚的任務
-  const lastTask = sortedTasks[0];
-  
-  // 回溯找出關鍵路徑
-  const criticalPathTasks: string[] = [lastTask.id];
-  let currentTask = lastTask;
-  
-  while (currentTask.dependencies.length > 0) {
-    // 找出依賴中結束最晚的任務
-    const dependencyTasks = currentTask.dependencies.map(depId => 
-      tasks.find(t => t.id === depId)
-    ).filter(t => t !== undefined) as Task[];
-    
-    if (dependencyTasks.length === 0) break;
-    
-    const latestDependency = dependencyTasks.reduce((latest, task) => {
-      return new Date(task.endDate) > new Date(latest.endDate) ? task : latest;
-    }, dependencyTasks[0]);
-    
-    criticalPathTasks.unshift(latestDependency.id);
-    currentTask = latestDependency;
+  for (const startTask of startTasks) {
+    const pathDuration = findLongestPath(startTask, new Set());
+    if (pathDuration > maxPathDuration) {
+      maxPathDuration = pathDuration;
+      criticalStartTask = startTask;
+    }
   }
   
-  return criticalPathTasks;
+  // 建構關鍵路徑任務列表
+  if (criticalStartTask) {
+    const buildCriticalPath = (task: Task, path: Task[]): void => {
+      path.push(task);
+      
+      const dependentTasks = tasks.filter(t => t.dependencies.includes(task.id));
+      if (dependentTasks.length > 0) {
+        // 選擇最長的後續路徑
+        let longestDepTask: Task | null = null;
+        let longestDuration = 0;
+        
+        for (const depTask of dependentTasks) {
+          const duration = findLongestPath(depTask, new Set());
+          if (duration > longestDuration) {
+            longestDuration = duration;
+            longestDepTask = depTask;
+          }
+        }
+        
+        if (longestDepTask) {
+          buildCriticalPath(longestDepTask, path);
+        }
+      }
+    };
+    
+    buildCriticalPath(criticalStartTask, criticalTasks);
+  }
+  
+  return criticalTasks;
 };
 
-// 計算儀表板指標
-export const getDashboardMetrics = (project: Project): DashboardMetrics => {
-  const completion = project.tasks.length
-    ? Math.round(
-        (project.tasks.filter(t => t.status === 'completed').length /
-          project.tasks.length) *
-          100
-      )
-    : 0;
-
-  const upcomingMilestones = project.milestones.filter(
-    m => m.status === 'upcoming'
-  ).length;
-
-  const avgUtilization = project.resources.length
-    ? Math.round(
-        project.resources.reduce((sum, r) => sum + r.utilization, 0) /
-          project.resources.length
-      )
-    : 0;
-
-  const budgetPct = project.budget.total
-    ? Math.round((project.budget.spent / project.budget.total) * 100)
-    : 0;
-
-  const budgetStatus: DashboardMetrics['budgetStatus'] =
-    budgetPct > 100
-      ? { percentage: budgetPct, status: 'over' }
-      : budgetPct > 75
-        ? { percentage: budgetPct, status: 'on-track' }
-        : { percentage: budgetPct, status: 'under' };
-
-  const risksCount = project.risks.reduce(
-    (acc, risk) => {
-      acc[risk.impact]++;
-      return acc;
-    },
-    { low: 0, medium: 0, high: 0 }
-  );
-
+// 驗證專案數據完整性
+export const validateProject = (project: Project): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  // 檢查基本資訊
+  if (!project.name || project.name.trim().length === 0) {
+    errors.push('專案名稱不能為空');
+  }
+  
+  if (!project.startDate || !project.endDate) {
+    errors.push('專案開始和結束日期必須設定');
+  } else {
+    const startDate = new Date(project.startDate);
+    const endDate = new Date(project.endDate);
+    if (startDate >= endDate) {
+      errors.push('專案結束日期必須晚於開始日期');
+    }
+  }
+  
+  // 檢查任務
+  project.tasks.forEach((task, index) => {
+    if (!task.name || task.name.trim().length === 0) {
+      errors.push(`任務 ${index + 1} 的名稱不能為空`);
+    }
+    
+    if (task.duration <= 0) {
+      errors.push(`任務 "${task.name}" 的工期必須大於 0`);
+    }
+    
+    if (task.progress < 0 || task.progress > 100) {
+      errors.push(`任務 "${task.name}" 的進度必須在 0-100% 之間`);
+    }
+    
+    // 檢查依賴關係
+    task.dependencies.forEach(depId => {
+      if (!project.tasks.find(t => t.id === depId)) {
+        errors.push(`任務 "${task.name}" 依賴的任務不存在`);
+      }
+    });
+  });
+  
+  // 檢查資源
+  project.resources.forEach((resource, index) => {
+    if (!resource.name || resource.name.trim().length === 0) {
+      errors.push(`資源 ${index + 1} 的名稱不能為空`);
+    }
+    
+    if (resource.cost < 0) {
+      errors.push(`資源 "${resource.name}" 的成本不能為負數`);
+    }
+    
+    if (resource.utilization < 0 || resource.utilization > 100) {
+      errors.push(`資源 "${resource.name}" 的利用率必須在 0-100% 之間`);
+    }
+  });
+  
+  // 檢查預算
+  if (project.budget.total <= 0) {
+    errors.push('專案總預算必須大於 0');
+  }
+  
+  if (project.budget.spent < 0) {
+    errors.push('已支出預算不能為負數');
+  }
+  
+  if (project.budget.spent > project.budget.total) {
+    errors.push('已支出預算不能超過總預算');
+  }
+  
   return {
-    taskCompletion: completion,
-    upcomingMilestones,
-    resourceUtilization: avgUtilization,
-    budgetStatus,
-    risksCount,
+    isValid: errors.length === 0,
+    errors
   };
 };

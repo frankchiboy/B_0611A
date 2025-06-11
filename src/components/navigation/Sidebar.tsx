@@ -9,7 +9,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {
   const [expanded, setExpanded] = React.useState(true);
-  const { currentProject } = useProject();
+  const { currentProject, createProject } = useProject();
 
   const navItems = [
     { id: 'dashboard', label: '儀表板', icon: <LayoutDashboard size={20} />, category: 'main' },
@@ -36,6 +36,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
 
   const toggleSidebar = () => {
     setExpanded(!expanded);
+  };
+
+  const handleCreateNewProject = () => {
+    const projectName = prompt('請輸入新專案名稱：');
+    if (projectName) {
+      createProject(projectName);
+      setCurrentView('dashboard');
+    }
   };
 
   const renderNavSection = (category: string, title: string) => {
@@ -93,7 +101,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
         {expanded && (
           <div className="flex items-center mb-4 px-3">
             <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">我的專案</h2>
-            <button className="ml-auto p-1 rounded-full hover:bg-slate-100 transition-colors text-slate-400">
+            <button 
+              onClick={handleCreateNewProject}
+              className="ml-auto p-1 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-teal-600"
+              title="建立新專案"
+            >
               <PlusCircle size={14} />
             </button>
           </div>
@@ -108,6 +120,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                 <span className="truncate">進度</span>
                 <span className="font-medium text-teal-600">{currentProject.progress}%</span>
               </div>
+            </div>
+          </div>
+        )}
+
+        {expanded && !currentProject && (
+          <div className="mb-6">
+            <div className="relative bg-gradient-soft from-amber-50 to-orange-50 rounded-xl p-3 mb-2 shadow-soft">
+              <h3 className="font-medium text-sm mb-1 text-amber-800">尚未選擇專案</h3>
+              <button 
+                onClick={handleCreateNewProject}
+                className="text-xs text-amber-600 hover:text-amber-800 font-medium"
+              >
+                建立新專案 →
+              </button>
             </div>
           </div>
         )}
