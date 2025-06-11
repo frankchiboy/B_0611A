@@ -146,7 +146,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
 
               {/* 專案列表下拉選單 - 修復可見性 */}
               {showProjectList && (
-                <div className="absolute top-full left-0 right-0 z-[9999] bg-white shadow-2xl rounded-xl border border-slate-200 overflow-visible">
+                <>
+                  {/* 透明點擊區域 - 只用於關閉選單 */}
+                  <div
+                    className="fixed inset-0 z-[9998] bg-transparent"
+                    onClick={() => setShowProjectList(false)}
+                  />
+                  
+                  {/* 選單本體 - 只有選單有背景 */}
+                  <div className="absolute top-full left-0 right-0 z-[9999] bg-white shadow-2xl rounded-xl border border-slate-200 overflow-visible">
                   <div className="px-3 py-2 border-b border-slate-100 bg-slate-50 rounded-t-xl">
                     <h4 className="text-xs font-semibold text-slate-700 uppercase">選擇專案</h4>
                   </div>
@@ -184,7 +192,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                       建立新專案
                     </button>
                   </div>
-                </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -259,13 +268,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
         )}
       </div>
 
-      {/* 點擊外部關閉專案列表 */}
-      {showProjectList && (
-        <div
-          className="fixed inset-0 z-[9998] bg-black/20 backdrop-blur-sm"
-          onClick={() => setShowProjectList(false)}
-        ></div>
-      )}
     </div>
   );
 };
