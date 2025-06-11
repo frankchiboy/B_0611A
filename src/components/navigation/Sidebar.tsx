@@ -146,34 +146,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
 
               {/* 專案列表下拉選單 - 修復可見性 */}
               {showProjectList && (
-                <div className="absolute top-full left-0 right-0 z-50 bg-white/90 backdrop-blur-sm shadow-xl rounded-lg p-2 max-h-64 overflow-y-auto">
-                  <div className="px-3 py-2 border-b border-slate-100 bg-slate-50">
+                <div className="absolute top-full left-0 right-0 z-[9999] bg-white shadow-2xl rounded-xl border border-slate-200 overflow-visible">
+                  <div className="px-3 py-2 border-b border-slate-100 bg-slate-50 rounded-t-xl">
                     <h4 className="text-xs font-semibold text-slate-700 uppercase">選擇專案</h4>
                   </div>
                   
-                  {projects.map(project => (
-                    <button
-                      key={project.id}
-                      onClick={() => handleProjectSelect(project)}
-                      className={`w-full px-3 py-2 text-left hover:bg-slate-50 transition-colors overflow-hidden ${
-                        currentProject.id === project.id
-                          ? 'bg-teal-50 text-teal-800'
-                          : 'text-slate-700 hover:text-slate-900'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate">{project.name}</div>
-                          <div className="text-xs text-slate-500">{project.progress}% 完成</div>
+                  <div className="max-h-64 overflow-y-auto bg-white">
+                    {projects.map(project => (
+                      <button
+                        key={project.id}
+                        onClick={() => handleProjectSelect(project)}
+                        className={`w-full px-3 py-2 text-left hover:bg-slate-50 transition-colors ${
+                          currentProject.id === project.id
+                            ? 'bg-teal-50 text-teal-800'
+                            : 'text-slate-700 hover:text-slate-900'
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate">{project.name}</div>
+                            <div className="text-xs text-slate-500">{project.progress}% 完成</div>
+                          </div>
+                          {currentProject?.id === project.id && (
+                            <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+                          )}
                         </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    ))}
+                  </div>
 
-                  <div className="border-t border-slate-200 bg-slate-50">
+                  <div className="border-t border-slate-200 bg-slate-50 rounded-b-xl">
                     <button
                       onClick={handleCreateNewProject}
-                      className="w-full px-3 py-2 text-left text-sm text-teal-700 hover:bg-teal-50 transition-colors flex items-center font-medium bg-slate-50"
+                      className="w-full px-3 py-2 text-left text-sm text-teal-700 hover:bg-teal-50 transition-colors flex items-center font-medium"
                     >
                       <PlusCircle size={14} className="mr-2" />
                       建立新專案
@@ -257,7 +262,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
       {/* 點擊外部關閉專案列表 */}
       {showProjectList && (
         <div
-          className="fixed inset-0 z-40 bg-black/10"
+          className="fixed inset-0 z-[9998] bg-black/20 backdrop-blur-sm"
           onClick={() => setShowProjectList(false)}
         ></div>
       )}
