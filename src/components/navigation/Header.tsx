@@ -42,17 +42,22 @@ export const Header: React.FC<HeaderProps> = ({ currentView }) => {
     setShowCreateMenu(false);
     
     switch (type) {
-      case 'project':
+      case 'project': {
         const projectName = prompt('請輸入新專案名稱：');
         if (projectName) {
           createProject(projectName);
         }
         break;
-      case 'task':
+      }
+      case 'task': {
         setDialogOpen({ task: 'create' });
         break;
-      case 'resource':
+      }
+      case 'resource': {
         setDialogOpen({ resource: 'create' });
+        break;
+      }
+      default:
         break;
     }
   };
