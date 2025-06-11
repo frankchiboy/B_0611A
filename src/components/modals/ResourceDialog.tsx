@@ -31,9 +31,9 @@ export const ResourceDialog: React.FC<ResourceDialogProps> = ({
 }) => {
   const { currentProject, addResource, updateResource, deleteResource } = useProject();
   
-  const emptyResource = createResource('', 'human');
+  const getEmptyResource = () => createResource('', 'human');
   
-  const [resource, setResource] = useState<Resource>(emptyResource);
+  const [resource, setResource] = useState<Resource>(getEmptyResource());
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
   const [availability, setAvailability] = useState<Availability[]>([]);
@@ -48,6 +48,7 @@ export const ResourceDialog: React.FC<ResourceDialogProps> = ({
         setAvailability(existingResource.availability || []);
       }
     } else if (isOpen && mode === 'create') {
+      const emptyResource = getEmptyResource();
       setResource(emptyResource);
       setSkills([]);
       setAvailability([
@@ -58,12 +59,12 @@ export const ResourceDialog: React.FC<ResourceDialogProps> = ({
         { dayOfWeek: 5, startTime: '09:00', endTime: '17:00' }
       ]);
     }
-  }, [isOpen, resourceId, mode, currentProject, emptyResource]);
+  }, [isOpen, resourceId, mode, currentProject]);
   
   if (!isOpen || !currentProject) return null;
   
   const handleClose = () => {
-    setResource(emptyResource);
+    setResource(getEmptyResource());
     setSkills([]);
     setNewSkill('');
     onClose();

@@ -56,13 +56,13 @@ const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const [projects, setProjects] = useState<Project[]>([sampleProject]);
-  const [currentProject, setCurrentProject] = useState<Project | null>(sampleProject);
+  const [currentProject, setCurrentProjectState] = useState<Project | null>(sampleProject);
   const [undoStack, setUndoStack] = useState<UndoItem[]>([]);
   const [redoStack, setRedoStack] = useState<UndoItem[]>([]);
   const [projectState, setProjectState] = useState<ProjectState>({
-    currentState: 'UNTITLED',
+    currentState: 'SAVED',
     hasUnsavedChanges: false,
-    isUntitled: true,
+    isUntitled: false,
     lastModified: new Date().toISOString(),
     autosaveTimer: 'active',
     openedFrom: null
@@ -72,6 +72,21 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const pushUndo = useCallback((item: UndoItem) => {
     setUndoStack(prev => [...prev.slice(0, 49), item]); // 限制堆疊大小為 50
     setRedoStack([]); // 清空 redo 堆疊
+  }, []);
+
+  // 設定當前專案並更新專案列表
+  const setCurrentProject = useCallback((project: Project) => {
+    setCurrentProjectState(project);
+    
+    // 更新專案列表中的專案
+    setProjects(prev => {
+      const exists = prev.find(p => p.id === project.id);
+      if (exists) {
+        return prev.map(p => p.id === project.id ? project : p);
+      } else {
+        return [...prev, project];
+      }
+    });
   }, []);
 
   // 初始化自動儲存
@@ -107,8 +122,14 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   // 建立新專案
   const createProject = useCallback((name?: string) => {
     const newProject = createEmptyProject(name);
+    
+    // 添加到專案列表
     setProjects(prev => [...prev, newProject]);
-    setCurrentProject(newProject);
+    
+    // 設為當前專案
+    setCurrentProjectState(newProject);
+    
+    // 更新專案狀態
     setProjectState(prev => transition(prev, 'initialize'));
     
     // 清空 undo/redo 堆疊
@@ -122,6 +143,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       projectUUID: newProject.id,
       isTemporary: true
     });
+
+    console.log('新專案已建立:', newProject.name);
   }, []);
 
   // 更新專案
@@ -138,7 +161,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     };
     
     setProjects(prev => prev.map(p => p.id === finalProject.id ? finalProject : p));
-    setCurrentProject(finalProject);
+    setCurrentProjectState(finalProject);
     
     // 更新狀態為已修改
     setProjectState(prev => transition(prev, 'edit'));
@@ -149,15 +172,15 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     setProjects(prev => prev.filter(p => p.id !== projectId));
     
     if (currentProject?.id === projectId) {
-      // 選擇另一個專案或創建新專案
+      // 選擇另一個專案或設為 null
       const remainingProjects = projects.filter(p => p.id !== projectId);
       if (remainingProjects.length > 0) {
-        setCurrentProject(remainingProjects[0]);
+        setCurrentProjectState(remainingProjects[0]);
       } else {
-        createProject();
+        setCurrentProjectState(null);
       }
     }
-  }, [currentProject, projects, createProject]);
+  }, [currentProject, projects]);
 
   // 新增任務
   const addTask = useCallback((task: Task) => {
@@ -458,10 +481,6 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
   const openProjectFile = useCallback(async (file: File) => {
     const pkg = await loadProjectFromFile(file);
     setCurrentProject(pkg.project);
-    setProjects(prev => {
-      const other = prev.filter(p => p.id !== pkg.project.id);
-      return [...other, pkg.project];
-    });
     setProjectState(prev => transition(prev, 'save'));
     updateRecentProjects({
       fileName: pkg.project.name,
@@ -469,17 +488,13 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       projectUUID: pkg.project.id,
       isTemporary: false,
     });
-  }, []);
+  }, [setCurrentProject]);
 
   // 從快照還原專案
   const restoreSnapshot = useCallback(async (name: string) => {
     const pkg = await loadSnapshot(name);
     if (!pkg) return;
     setCurrentProject(pkg.project);
-    setProjects(prev => {
-      const other = prev.filter(p => p.id !== pkg.project.id);
-      return [...other, pkg.project];
-    });
     setProjectState(prev => transition(prev, 'restoreSnapshot'));
     updateRecentProjects({
       fileName: pkg.project.name,
@@ -487,7 +502,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       projectUUID: pkg.project.id,
       isTemporary: false,
     });
-  }, []);
+  }, [setCurrentProject]);
 
   const listSnapshots = useCallback(() => {
     return getSnapshotsList();
@@ -502,16 +517,13 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     if (latest) {
       await restoreSnapshot(latest.name);
     } else {
-      createProject();
+      // 如果沒有快照且沒有專案，保持預設專案
+      if (!currentProject && projects.length === 0) {
+        setProjects([sampleProject]);
+        setCurrentProjectState(sampleProject);
+      }
     }
-  }, [restoreSnapshot, createProject]);
-
-  // 在啟動時嘗試從最近快照還原專案
-  useEffect(() => {
-    initializeFromLatestSnapshot();
-    // 僅在初始化階段執行一次
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [restoreSnapshot, currentProject, projects.length]);
 
   const undo = useCallback(() => {
     if (undoStack.length === 0 || !currentProject) return;

@@ -32,14 +32,17 @@ export const TaskDialog: React.FC<TaskDialogProps> = ({
 }) => {
   const { currentProject, addTask, updateTask, deleteTask } = useProject();
   
-  const emptyTask = createTask(
-    currentProject?.id || '', 
-    '', 
-    new Date().toISOString().split('T')[0], 
-    new Date().toISOString().split('T')[0]
-  );
+  const getEmptyTask = () => {
+    if (!currentProject) return null;
+    return createTask(
+      currentProject.id, 
+      '', 
+      new Date().toISOString().split('T')[0], 
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    );
+  };
   
-  const [task, setTask] = useState<Task>(emptyTask);
+  const [task, setTask] = useState<Task | null>(getEmptyTask());
   const [assignedResources, setAssignedResources] = useState<string[]>([]);
   const [dependencies, setDependencies] = useState<string[]>([]);
   const [tab, setTab] = useState<'details' | 'resources' | 'dependencies'>('details');
@@ -54,16 +57,17 @@ export const TaskDialog: React.FC<TaskDialogProps> = ({
         setDependencies(existingTask.dependencies);
       }
     } else if (isOpen && mode === 'create') {
+      const emptyTask = getEmptyTask();
       setTask(emptyTask);
       setAssignedResources([]);
       setDependencies([]);
     }
-  }, [isOpen, taskId, mode, currentProject, emptyTask]);
+  }, [isOpen, taskId, mode, currentProject]);
   
-  if (!isOpen || !currentProject) return null;
+  if (!isOpen || !currentProject || !task) return null;
   
   const handleClose = () => {
-    setTask(emptyTask);
+    setTask(getEmptyTask());
     setAssignedResources([]);
     setDependencies([]);
     onClose();
@@ -132,6 +136,11 @@ export const TaskDialog: React.FC<TaskDialogProps> = ({
         ...task,
         isMilestone: (e.target as HTMLInputElement).checked
       });
+    } else if (name === 'progress') {
+      setTask({
+        ...task,
+        progress: parseInt(value) || 0
+      });
     } else {
       setTask({
         ...task,
@@ -162,8 +171,8 @@ export const TaskDialog: React.FC<TaskDialogProps> = ({
   };
   
   const getTaskName = (taskId: string) => {
-    const task = currentProject.tasks.find(t => t.id === taskId);
-    return task ? task.name : '未知任務';
+    const currentTask = currentProject.tasks.find(t => t.id === taskId);
+    return currentTask ? currentTask.name : '未知任務';
   };
   
   return (
