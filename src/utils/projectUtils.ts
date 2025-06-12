@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Project, Task, Resource, Milestone, Team, Budget, CostRecord, Risk, DashboardMetrics } from '../types/projectTypes';
+import { Project, Task, Resource, Milestone, Team, CostRecord, Risk, DashboardMetrics } from '../types/projectTypes';
 
 // 建立空白專案
 export const createEmptyProject = (name?: string): Project => {
