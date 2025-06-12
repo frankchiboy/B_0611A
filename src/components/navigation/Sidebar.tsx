@@ -1,6 +1,9 @@
 import React from 'react';
 import { LayoutDashboard, GanttChart, CheckSquare, Users, Coins, AlertTriangle, Archive, Clock, BarChart4, Settings, PlusCircle, Anchor, Menu, X, Workflow, Layers, FileSpreadsheet, Activity, Sliders, BookTemplate as FileTemplate, ChevronDown, FolderOpen } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
+import type { Project } from '../../types/projectTypes';
+import { DropdownMenuPortal } from './DropdownMenuPortal';
+import { OverlayPortal } from './OverlayPortal';
 
 interface SidebarProps {
   currentView: string;
@@ -10,6 +13,8 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {
   const [expanded, setExpanded] = React.useState(true);
   const [showProjectList, setShowProjectList] = React.useState(false);
+  const [menuPosition, setMenuPosition] = React.useState({ top: 0, left: 0 });
+  const projectButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const { currentProject, projects, createProject, setCurrentProject } = useProject();
 
   const navItems = [
@@ -49,11 +54,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
     }
   };
 
-  const handleProjectSelect = (project: any) => {
+  const handleProjectSelect = (project: Project) => {
     console.log('選擇專案:', project.name, 'ID:', project.id);
     setCurrentProject(project);
     setCurrentView('dashboard');
     setShowProjectList(false);
+  };
+
+  const toggleProjectList = () => {
+    if (!showProjectList && projectButtonRef.current) {
+      const rect = projectButtonRef.current.getBoundingClientRect();
+      setMenuPosition({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
+    }
+    setShowProjectList(prev => !prev);
   };
 
   const renderNavSection = (category: string, title: string) => {
@@ -125,7 +138,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
           <div className="mb-6">
             <div className="relative">
               <button
-                onClick={() => setShowProjectList(!showProjectList)}
+                ref={projectButtonRef}
+                onClick={toggleProjectList}
                 className="w-full bg-gradient-soft from-white to-slate-50 rounded-xl p-3 mb-2 shadow-soft overflow-hidden hover:shadow-md transition-all text-left"
               >
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-400 to-navy-500" style={{ width: `${currentProject.progress}%` }}></div>
@@ -145,7 +159,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
 
               {/* 專案列表下拉選單 - 修復可見性 */}
               {showProjectList && (
-                <div className="absolute top-full left-0 right-0 bg-white rounded-lg shadow-2xl border border-slate-200 py-2 z-[9999] max-h-64 overflow-y-auto">
+                <DropdownMenuPortal position={menuPosition}>
                   <div className="px-3 py-2 border-b border-slate-100 bg-slate-50">
                     <h4 className="text-xs font-semibold text-slate-700 uppercase">選擇專案</h4>
                   </div>
@@ -154,9 +168,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                     <button
                       key={project.id}
                       onClick={() => handleProjectSelect(project)}
-                      className={`w-full px-3 py-2 text-left hover:bg-slate-50 transition-colors ${
-                        currentProject.id === project.id 
-                          ? 'bg-teal-50 text-teal-800' 
+                      className={`w-full px-3 py-2 text-left hover:bg-slate-50 transition-colors overflow-hidden ${
+                        currentProject.id === project.id
+                          ? 'bg-teal-50 text-teal-800'
                           : 'text-slate-700 hover:text-slate-900'
                       }`}
                     >
@@ -181,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                       建立新專案
                     </button>
                   </div>
-                </div>
+                </DropdownMenuPortal>
               )}
             </div>
           </div>
@@ -257,12 +271,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
       </div>
 
       {/* 點擊外部關閉專案列表 */}
-      {showProjectList && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => setShowProjectList(false)}
-        ></div>
-      )}
+      {showProjectList && <OverlayPortal onClick={() => setShowProjectList(false)} />}
     </div>
   );
 };
