@@ -144,15 +144,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                 </div>
               </button>
 
-              {/* 專案列表下拉選單 - 修復可見性 */}
+              {/* 專案列表下拉選單 - 完全隔離版本 */}
               {showProjectList && (
+
                 <div
                   className="absolute top-full left-0 z-[9999] w-[300px] bg-white bg-opacity-100 shadow-2xl rounded-xl border border-gray-200 p-4 overflow-visible isolate mix-blend-normal backdrop-blur-none will-change-transform transform-gpu"
                 >
+
                   <div className="px-3 py-2 border-b border-slate-100 bg-slate-50">
                     <h4 className="text-xs font-semibold text-slate-700 uppercase">選擇專案</h4>
                   </div>
                   
+
                   {projects.map(project => (
                     <button
                       key={project.id}
@@ -168,14 +171,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
                           <div className="text-sm font-medium truncate">{project.name}</div>
                           <div className="text-xs text-slate-500">{project.progress}% 完成</div>
                         </div>
-                        {currentProject?.id === project.id && (
-                          <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
-                        )}
                       </div>
                     </button>
                   ))}
 
-                  <div className="border-t border-slate-100 mt-2 pt-2 bg-slate-50">
+                  <div className="border-t border-slate-200 bg-slate-50 rounded-b-xl">
                     <button
                       onClick={handleCreateNewProject}
                       className="w-full px-3 py-2 text-left text-sm text-teal-700 hover:bg-teal-50 transition-colors flex items-center font-medium"
@@ -259,10 +259,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
         )}
       </div>
 
-      {/* 點擊外部關閉專案列表 */}
+      {/* 點擊外部關閉專案列表 - 完全透明背景 */}
       {showProjectList && (
         <div
+
           className="fixed inset-0 z-40 bg-black/10"
+
           onClick={() => setShowProjectList(false)}
         ></div>
       )}
