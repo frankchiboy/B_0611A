@@ -148,7 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
               {showProjectList && (
 
                 <div
-                  className="absolute top-full left-0 z-[9999] w-[280px] bg-white shadow-xl rounded-xl border border-gray-200 p-3 overflow-visible isolate mix-blend-normal backdrop-blur-none bg-opacity-100 will-change-transform"
+                  className="absolute top-full left-0 z-[9999] w-[300px] bg-white bg-opacity-100 shadow-2xl rounded-xl border border-gray-200 p-4 overflow-visible isolate mix-blend-normal backdrop-blur-none will-change-transform transform-gpu"
                 >
 
                   <div className="px-3 py-2 border-b border-slate-100 bg-slate-50">
