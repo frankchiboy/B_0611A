@@ -1,119 +1,105 @@
 import React, { useState, useEffect } from 'react';
 import { useProject } from '../../context/ProjectContext';
-import { X, Calendar, FileText, Trash, Save } from 'lucide-react';
-import { Project } from '../../types/projectTypes';
-import { createEmptyProject } from '../../utils/projectUtils';
+
+import { Calendar, Edit, PlusCircle, Trash, X } from 'lucide-react';
+import type { Project } from '../../types/projectTypes';
+
 
 interface ProjectDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  projectId?: string;
+
   mode: 'create' | 'edit';
 }
 
-export const ProjectDialog: React.FC<ProjectDialogProps> = ({
-  isOpen,
-  onClose,
-  projectId,
-  mode
-}) => {
-  const { currentProject, projects, createProject, updateProject, deleteProject } = useProject();
-  
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'planning' as const
-  });
+export const ProjectDialog: React.FC<ProjectDialogProps> = ({ isOpen, onClose, mode }) => {
+  const { currentProject, createProject, updateProject, deleteProject } = useProject();
 
-  useEffect(() => {
-    if (isOpen && mode === 'edit' && projectId) {
-      const project = projects.find(p => p.id === projectId) || currentProject;
-      if (project) {
-        setFormData({
-          name: project.name,
-          description: project.description,
-          startDate: project.startDate,
-          endDate: project.endDate,
-          status: project.status
-        });
-      }
-    } else if (isOpen && mode === 'create') {
-      setFormData({
+  const getInitialProject = (): Project | null => {
+    if (mode === 'edit') return currentProject;
+    if (mode === 'create') {
+      return {
+        id: '',
         name: '',
         description: '',
         startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        status: 'planning'
-      });
+        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: 'planning',
+        progress: 0,
+        tasks: [],
+        resources: [],
+        milestones: [],
+        teams: [],
+        costs: [],
+        risks: [],
+        budget: { total: 0, spent: 0, remaining: 0, currency: 'TWD', categories: [] },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
     }
-  }, [isOpen, mode, projectId, projects, currentProject]);
+    return null;
+  };
 
-  if (!isOpen) return null;
+  const [project, setProject] = useState<Project | null>(getInitialProject());
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name.trim()) {
+  useEffect(() => {
+    if (isOpen) {
+      setProject(getInitialProject());
+    }
+  }, [isOpen, mode]);
+
+  if (!isOpen || !project) return null;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setProject({ ...project, [name]: value });
+  };
+
+  const handleSave = () => {
+    if (!project.name.trim()) {
       alert('請輸入專案名稱');
-      return;
-    }
 
-    if (new Date(formData.startDate) >= new Date(formData.endDate)) {
-      alert('結束日期必須晚於開始日期');
       return;
     }
 
     if (mode === 'create') {
-      const newProject = createEmptyProject(formData.name);
-      const updatedProject = {
-        ...newProject,
-        ...formData
-      };
-      createProject(updatedProject.name);
-    } else if (mode === 'edit' && projectId) {
-      const project = projects.find(p => p.id === projectId) || currentProject;
-      if (project) {
-        const updatedProject = {
-          ...project,
-          ...formData,
-          updatedAt: new Date().toISOString()
-        };
-        updateProject(updatedProject);
-      }
+
+      createProject(project.name);
+    } else if (currentProject) {
+      updateProject({ ...currentProject, ...project });
     }
 
     onClose();
   };
 
   const handleDelete = () => {
-    if (mode === 'edit' && projectId) {
-      if (window.confirm('確定要刪除此專案嗎？此操作無法復原。')) {
-        deleteProject(projectId);
+
+    if (mode === 'edit' && currentProject) {
+      if (window.confirm('確定要刪除此專案嗎？')) {
+        deleteProject(currentProject.id);
+
         onClose();
       }
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
         <div className="p-6 border-b border-slate-200 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-slate-800">
-            {mode === 'create' ? '建立新專案' : '編輯專案'}
-          </h2>
+          <div className="flex items-center">
+            {mode === 'create' ? <PlusCircle size={24} className="text-teal-500 mr-3" /> : <Edit size={24} className="text-teal-500 mr-3" />}
+            <h2 className="text-2xl font-display font-semibold">
+              {mode === 'create' ? '建立專案' : '編輯專案'}
+            </h2>
+          </div>
+
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               專案名稱 <span className="text-red-500">*</span>
@@ -121,9 +107,11 @@ export const ProjectDialog: React.FC<ProjectDialogProps> = ({
             <input
               type="text"
               name="name"
-              value={formData.name}
+
+              value={project.name}
               onChange={handleChange}
-              className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+
               placeholder="輸入專案名稱"
               required
             />
@@ -133,92 +121,71 @@ export const ProjectDialog: React.FC<ProjectDialogProps> = ({
             <label className="block text-sm font-medium text-slate-700 mb-1">專案描述</label>
             <textarea
               name="description"
-              value={formData.description}
+
+              value={project.description}
               onChange={handleChange}
               rows={3}
-              className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+              className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               placeholder="輸入專案描述"
             />
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                <Calendar size={16} className="inline mr-1" />
+                <Calendar size={16} className="inline mr-1.5" />
+
                 開始日期
               </label>
               <input
                 type="date"
                 name="startDate"
-                value={formData.startDate}
+
+                value={project.startDate}
                 onChange={handleChange}
-                className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                required
+                className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                <Calendar size={16} className="inline mr-1" />
+                <Calendar size={16} className="inline mr-1.5" />
+
                 結束日期
               </label>
               <input
                 type="date"
                 name="endDate"
-                value={formData.endDate}
+
+                value={project.endDate}
                 onChange={handleChange}
-                className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                required
+                className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               />
             </div>
           </div>
-
+        </div>
+        <div className="p-6 border-t border-slate-200 flex justify-between">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">專案狀態</label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-            >
-              <option value="planning">規劃中</option>
-              <option value="active">進行中</option>
-              <option value="on-hold">暫停</option>
-              <option value="completed">已完成</option>
-            </select>
-          </div>
-
-          <div className="flex justify-between pt-4">
             {mode === 'edit' && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 flex items-center"
-              >
+              <button onClick={handleDelete} className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 flex items-center">
+
                 <Trash size={16} className="mr-2" />
                 刪除專案
               </button>
             )}
-            
-            <div className="flex gap-3 ml-auto">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50"
-              >
-                取消
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-teal-500 rounded-lg text-white hover:bg-teal-600 flex items-center"
-              >
-                <Save size={16} className="mr-2" />
-                {mode === 'create' ? '建立專案' : '儲存變更'}
-              </button>
-            </div>
+
           </div>
-        </form>
+          <div className="flex gap-3">
+            <button onClick={onClose} className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50">
+              取消
+            </button>
+            <button onClick={handleSave} className="px-4 py-2 bg-teal-500 rounded-lg text-white hover:bg-teal-600">
+              {mode === 'create' ? '建立專案' : '儲存變更'}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
+
+export default ProjectDialog;
+
