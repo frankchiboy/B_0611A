@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ProjectSummary } from '../components/dashboard/ProjectSummary';
 import { TaskProgress } from '../components/dashboard/TaskProgress';
+import { ProjectProgressChart } from '../components/dashboard/ProjectProgressChart';
 import KeyMetrics from '../components/dashboard/KeyMetrics';
 import { ResourceAllocation } from '../components/dashboard/ResourceAllocation';
 import ProjectDialog from '../components/modals/ProjectDialog';
@@ -64,7 +65,16 @@ export const Dashboard: React.FC = () => {
       </div>
       
       <ProjectSummary />
-      <KeyMetrics />
+      
+      {/* 添加進度圓餅圖 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2">
+          <KeyMetrics />
+        </div>
+        <div>
+          <ProjectProgressChart />
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
         <div className="lg:col-span-8">
