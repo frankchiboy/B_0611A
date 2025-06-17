@@ -100,6 +100,7 @@ export const ProjectDialog: React.FC<ProjectDialogProps> = ({ isOpen, onClose, m
           </button>
         </div>
 
+        <div className="p-6 flex-1 overflow-y-auto space-y-6">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               專案名稱 <span className="text-red-500">*</span>
@@ -188,4 +189,3 @@ export const ProjectDialog: React.FC<ProjectDialogProps> = ({ isOpen, onClose, m
 };
 
 export default ProjectDialog;
-
