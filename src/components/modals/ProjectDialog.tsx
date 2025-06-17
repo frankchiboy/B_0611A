@@ -4,7 +4,6 @@ import { useProject } from '../../context/ProjectContext';
 import { Calendar, Edit, PlusCircle, Trash, X } from 'lucide-react';
 import type { Project } from '../../types/projectTypes';
 
-
 interface ProjectDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -100,7 +99,8 @@ export const ProjectDialog: React.FC<ProjectDialogProps> = ({ isOpen, onClose, m
           </button>
         </div>
 
-        <div className="p-6 flex-1 overflow-y-auto space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto">
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               專案名稱 <span className="text-red-500">*</span>
@@ -188,4 +188,6 @@ export const ProjectDialog: React.FC<ProjectDialogProps> = ({ isOpen, onClose, m
   );
 };
 
+
 export default ProjectDialog;
+

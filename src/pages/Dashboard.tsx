@@ -138,13 +138,13 @@ export const Dashboard: React.FC = () => {
                 <div className="flex justify-between mb-1">
                   <span className="text-sm text-slate-600">任務完成率</span>
                   <span className="text-sm font-medium text-slate-800">
-                    {Math.round((currentProject.tasks.filter(t => t.status === 'completed').length / currentProject.tasks.length) * 100)}%
+                    {currentProject.tasks.length > 0 ? Math.round((currentProject.tasks.filter(t => t.status === 'completed').length / currentProject.tasks.length) * 100) : 0}%
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-1.5">
-                  <div 
-                    className="bg-teal-500 h-1.5 rounded-full" 
-                    style={{ width: `${Math.round((currentProject.tasks.filter(t => t.status === 'completed').length / currentProject.tasks.length) * 100)}%` }}
+                  <div
+                    className="bg-teal-500 h-1.5 rounded-full"
+                    style={{ width: `${currentProject.tasks.length > 0 ? Math.round((currentProject.tasks.filter(t => t.status === 'completed').length / currentProject.tasks.length) * 100) : 0}%` }}
                   ></div>
                 </div>
               </div>
@@ -153,13 +153,13 @@ export const Dashboard: React.FC = () => {
                 <div className="flex justify-between mb-1">
                   <span className="text-sm text-slate-600">里程碑達成率</span>
                   <span className="text-sm font-medium text-slate-800">
-                    {Math.round((currentProject.milestones.filter(m => m.status === 'reached').length / currentProject.milestones.length) * 100)}%
+                    {currentProject.milestones.length > 0 ? Math.round((currentProject.milestones.filter(m => m.status === 'reached').length / currentProject.milestones.length) * 100) : 0}%
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-1.5">
-                  <div 
-                    className="bg-navy-500 h-1.5 rounded-full" 
-                    style={{ width: `${Math.round((currentProject.milestones.filter(m => m.status === 'reached').length / currentProject.milestones.length) * 100)}%` }}
+                  <div
+                    className="bg-navy-500 h-1.5 rounded-full"
+                    style={{ width: `${currentProject.milestones.length > 0 ? Math.round((currentProject.milestones.filter(m => m.status === 'reached').length / currentProject.milestones.length) * 100) : 0}%` }}
                   ></div>
                 </div>
               </div>
