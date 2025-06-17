@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Search, Bell, Calendar, Plus, ChevronDown, Expand } from 'lucide-react';
+import { Search, Bell, Calendar, Plus, ChevronDown, Expand, Edit } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
 import { TaskDialog } from '../modals/TaskDialog';
 import { ResourceDialog } from '../modals/ResourceDialog';
+import { ProjectDialog } from '../modals/ProjectDialog';
 
 interface HeaderProps {
   currentView: string;
@@ -14,6 +15,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView }) => {
   const [dialogOpen, setDialogOpen] = useState<{
     task?: 'create';
     resource?: 'create';
+    project?: 'create' | 'edit';
   }>({});
   
   const { currentProject, createProject } = useProject();
@@ -43,10 +45,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView }) => {
     
     switch (type) {
       case 'project': {
-        const projectName = prompt('請輸入新專案名稱：');
-        if (projectName) {
-          createProject(projectName);
-        }
+        setDialogOpen({ project: 'create' });
         break;
       }
       case 'task': {
@@ -59,6 +58,12 @@ export const Header: React.FC<HeaderProps> = ({ currentView }) => {
       }
       default:
         break;
+    }
+  };
+
+  const handleEditProject = () => {
+    if (currentProject) {
+      setDialogOpen({ project: 'edit' });
     }
   };
 
@@ -75,6 +80,13 @@ export const Header: React.FC<HeaderProps> = ({ currentView }) => {
             <div className="ml-4 flex items-center">
               <div className="w-1 h-1 rounded-full bg-slate-300 mx-3"></div>
               <span className="text-slate-500">{currentProject.name}</span>
+              <button 
+                onClick={handleEditProject}
+                className="ml-2 p-1 text-slate-400 hover:text-slate-600 rounded"
+                title="編輯專案"
+              >
+                <Edit size={14} />
+              </button>
             </div>
           )}
         </div>
@@ -178,6 +190,15 @@ export const Header: React.FC<HeaderProps> = ({ currentView }) => {
           isOpen={!!dialogOpen.resource} 
           onClose={closeDialogs} 
           mode={dialogOpen.resource} 
+        />
+      )}
+
+      {dialogOpen.project && (
+        <ProjectDialog
+          isOpen={!!dialogOpen.project}
+          onClose={closeDialogs}
+          projectId={currentProject?.id}
+          mode={dialogOpen.project}
         />
       )}
     </>
