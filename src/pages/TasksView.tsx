@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useProject } from '../context/ProjectContext';
 import { Calendar, Clock, Users, CheckSquare, List, Grid, Filter, Search, Plus, ArrowUpDown, Bookmark, MoreHorizontal, ChevronDown, Download } from 'lucide-react';
+import { TaskDialog } from '../components/modals/TaskDialog';
 import { Task } from '../types/projectTypes';
 import { exportTasksToCSV } from "../utils/fileSystem";
 
@@ -9,6 +10,21 @@ export const TasksView: React.FC = () => {
   const [viewType, setViewType] = useState<'list' | 'board'>('board');
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showTaskDialog, setShowTaskDialog] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
+  const [editTaskId, setEditTaskId] = useState<string | null>(null);
+
+  const openCreateTask = () => {
+    setDialogMode('create');
+    setEditTaskId(null);
+    setShowTaskDialog(true);
+  };
+
+  const openEditTask = (taskId: string) => {
+    setDialogMode('edit');
+    setEditTaskId(taskId);
+    setShowTaskDialog(true);
+  };
   
   if (!currentProject) {
     return (
@@ -171,7 +187,7 @@ export const TasksView: React.FC = () => {
               <ChevronDown size={14} className="ml-1.5" />
             </button>
             
-            <button className="px-4 py-2 bg-gradient-to-r from-teal-500 to-navy-500 hover:from-teal-600 hover:to-navy-600 text-white rounded-full text-sm flex items-center shadow-soft">
+            <button onClick={openCreateTask} className="px-4 py-2 bg-gradient-to-r from-teal-500 to-navy-500 hover:from-teal-600 hover:to-navy-600 text-white rounded-full text-sm flex items-center shadow-soft">
               <Plus size={14} className="mr-1.5" />
               新增任務
             </button>
@@ -328,7 +344,7 @@ export const TasksView: React.FC = () => {
                 </div>
                 
                 <div className="p-3 border-t border-slate-100">
-                  <button className="w-full py-2 text-sm text-teal-600 hover:text-teal-800 flex items-center justify-center bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors">
+                  <button onClick={openCreateTask} className="w-full py-2 text-sm text-teal-600 hover:text-teal-800 flex items-center justify-center bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors">
                     <Plus size={14} className="mr-1" />
                     新增任務
                   </button>
@@ -452,7 +468,7 @@ export const TasksView: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button className="text-teal-600 hover:text-teal-800 bg-teal-50 hover:bg-teal-100 rounded-full px-3 py-1 text-xs transition-colors">編輯</button>
+                          <button onClick={() => openEditTask(task.id)} className="text-teal-600 hover:text-teal-800 bg-teal-50 hover:bg-teal-100 rounded-full px-3 py-1 text-xs transition-colors">編輯</button>
                         </td>
                       </tr>
                     ))
@@ -469,6 +485,12 @@ export const TasksView: React.FC = () => {
           </div>
         )}
       </div>
+      <TaskDialog
+        isOpen={showTaskDialog}
+        onClose={() => setShowTaskDialog(false)}
+        mode={dialogMode}
+        taskId={editTaskId || undefined}
+      />
     </div>
   );
 };

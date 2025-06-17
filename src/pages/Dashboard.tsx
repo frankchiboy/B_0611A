@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ProjectSummary } from '../components/dashboard/ProjectSummary';
 import { TaskProgress } from '../components/dashboard/TaskProgress';
 import KeyMetrics from '../components/dashboard/KeyMetrics';
 import { ResourceAllocation } from '../components/dashboard/ResourceAllocation';
+import ProjectDialog from '../components/modals/ProjectDialog';
 import { useProject } from '../context/ProjectContext';
-import { Bell, Calendar, Layers, TrendingUp, Anchor, ArrowRight, Plus } from 'lucide-react';
+import { Bell, Calendar, Layers, TrendingUp, Anchor, ArrowRight, Plus, Edit } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const { currentProject, createProject } = useProject();
+  const [showProjectDialog, setShowProjectDialog] = useState(false);
   
   if (!currentProject) {
     return (
@@ -46,6 +48,10 @@ export const Dashboard: React.FC = () => {
         </div>
         
         <div className="flex space-x-3 mt-4 lg:mt-0">
+          <button className="btn-outline" onClick={() => setShowProjectDialog(true)}>
+            <Edit size={16} className="mr-2" />
+            編輯專案
+          </button>
           <button className="btn-outline">
             <Layers size={16} className="mr-2" />
             專案報告
@@ -122,13 +128,13 @@ export const Dashboard: React.FC = () => {
                 <div className="flex justify-between mb-1">
                   <span className="text-sm text-slate-600">任務完成率</span>
                   <span className="text-sm font-medium text-slate-800">
-                    {Math.round((currentProject.tasks.filter(t => t.status === 'completed').length / currentProject.tasks.length) * 100)}%
+                    {currentProject.tasks.length > 0 ? Math.round((currentProject.tasks.filter(t => t.status === 'completed').length / currentProject.tasks.length) * 100) : 0}%
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-1.5">
-                  <div 
-                    className="bg-teal-500 h-1.5 rounded-full" 
-                    style={{ width: `${Math.round((currentProject.tasks.filter(t => t.status === 'completed').length / currentProject.tasks.length) * 100)}%` }}
+                  <div
+                    className="bg-teal-500 h-1.5 rounded-full"
+                    style={{ width: `${currentProject.tasks.length > 0 ? Math.round((currentProject.tasks.filter(t => t.status === 'completed').length / currentProject.tasks.length) * 100) : 0}%` }}
                   ></div>
                 </div>
               </div>
@@ -137,13 +143,13 @@ export const Dashboard: React.FC = () => {
                 <div className="flex justify-between mb-1">
                   <span className="text-sm text-slate-600">里程碑達成率</span>
                   <span className="text-sm font-medium text-slate-800">
-                    {Math.round((currentProject.milestones.filter(m => m.status === 'reached').length / currentProject.milestones.length) * 100)}%
+                    {currentProject.milestones.length > 0 ? Math.round((currentProject.milestones.filter(m => m.status === 'reached').length / currentProject.milestones.length) * 100) : 0}%
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-1.5">
-                  <div 
-                    className="bg-navy-500 h-1.5 rounded-full" 
-                    style={{ width: `${Math.round((currentProject.milestones.filter(m => m.status === 'reached').length / currentProject.milestones.length) * 100)}%` }}
+                  <div
+                    className="bg-navy-500 h-1.5 rounded-full"
+                    style={{ width: `${currentProject.milestones.length > 0 ? Math.round((currentProject.milestones.filter(m => m.status === 'reached').length / currentProject.milestones.length) * 100) : 0}%` }}
                   ></div>
                 </div>
               </div>
@@ -166,6 +172,7 @@ export const Dashboard: React.FC = () => {
       </div>
       
       <ResourceAllocation />
+      <ProjectDialog isOpen={showProjectDialog} onClose={() => setShowProjectDialog(false)} mode="edit" />
     </div>
   );
 };

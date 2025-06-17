@@ -1,10 +1,26 @@
 import React, { useState } from 'react';
 import { useProject } from '../context/ProjectContext';
 import { Search, Filter, Plus, ChevronDown, Users, Clock, Briefcase, BarChart, ArrowRight } from 'lucide-react';
+import { ResourceDialog } from '../components/modals/ResourceDialog';
 
 export const ResourcesView: React.FC = () => {
   const { currentProject } = useProject();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showResourceDialog, setShowResourceDialog] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
+  const [editResourceId, setEditResourceId] = useState<string | null>(null);
+
+  const openCreateResource = () => {
+    setDialogMode('create');
+    setEditResourceId(null);
+    setShowResourceDialog(true);
+  };
+
+  const openEditResource = (id: string) => {
+    setDialogMode('edit');
+    setEditResourceId(id);
+    setShowResourceDialog(true);
+  };
   
   if (!currentProject) {
     return (
@@ -62,7 +78,7 @@ export const ResourcesView: React.FC = () => {
               </button>
             </div>
             
-            <button className="px-4 py-2 bg-white text-purple-700 rounded-lg text-sm flex items-center shadow-sm hover:bg-purple-50 transition-colors">
+            <button onClick={openCreateResource} className="px-4 py-2 bg-white text-purple-700 rounded-lg text-sm flex items-center shadow-sm hover:bg-purple-50 transition-colors">
               <Plus size={14} className="mr-1.5" />
               新增資源
             </button>
@@ -185,7 +201,7 @@ export const ResourcesView: React.FC = () => {
                     <BarChart size={14} className="mr-1.5" />
                     <span>${resource.cost}/小時</span>
                   </div>
-                  <button className="text-purple-600 hover:text-purple-800 font-medium flex items-center">
+                  <button onClick={() => openEditResource(resource.id)} className="text-purple-600 hover:text-purple-800 font-medium flex items-center">
                     <span>查看詳情</span>
                     <ArrowRight size={14} className="ml-1" />
                   </button>
@@ -202,7 +218,7 @@ export const ResourcesView: React.FC = () => {
                 </div>
                 <h2 className="text-xl font-semibold text-slate-800 mb-2">沒有找到符合條件的資源</h2>
                 <p className="text-slate-500 mb-4">嘗試使用不同的搜尋條件或建立新資源</p>
-                <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-medium shadow-sm hover:from-purple-700 hover:to-indigo-700 transition-colors">
+                <button onClick={openCreateResource} className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-medium shadow-sm hover:from-purple-700 hover:to-indigo-700 transition-colors">
                   新增資源
                 </button>
               </div>
@@ -210,6 +226,12 @@ export const ResourcesView: React.FC = () => {
           )}
         </div>
       </div>
+      <ResourceDialog
+        isOpen={showResourceDialog}
+        onClose={() => setShowResourceDialog(false)}
+        mode={dialogMode}
+        resourceId={editResourceId || undefined}
+      />
     </div>
   );
 };
