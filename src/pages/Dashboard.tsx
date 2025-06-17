@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ProjectSummary } from '../components/dashboard/ProjectSummary';
 import { TaskProgress } from '../components/dashboard/TaskProgress';
 import KeyMetrics from '../components/dashboard/KeyMetrics';
 import { ResourceAllocation } from '../components/dashboard/ResourceAllocation';
+import ProjectDialog from '../components/modals/ProjectDialog';
 import { useProject } from '../context/ProjectContext';
-import { Bell, Calendar, Layers, TrendingUp, Anchor, ArrowRight, Plus } from 'lucide-react';
+import { Bell, Calendar, Layers, TrendingUp, Anchor, ArrowRight, Plus, Edit } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const { currentProject, createProject } = useProject();
+  const [showProjectDialog, setShowProjectDialog] = useState(false);
   
   if (!currentProject) {
     return (
@@ -46,6 +48,10 @@ export const Dashboard: React.FC = () => {
         </div>
         
         <div className="flex space-x-3 mt-4 lg:mt-0">
+          <button className="btn-outline" onClick={() => setShowProjectDialog(true)}>
+            <Edit size={16} className="mr-2" />
+            編輯專案
+          </button>
           <button className="btn-outline">
             <Layers size={16} className="mr-2" />
             專案報告
@@ -166,6 +172,7 @@ export const Dashboard: React.FC = () => {
       </div>
       
       <ResourceAllocation />
+      <ProjectDialog isOpen={showProjectDialog} onClose={() => setShowProjectDialog(false)} mode="edit" />
     </div>
   );
 };

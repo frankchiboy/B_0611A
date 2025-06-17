@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clock, CalendarDays, Users, CircleDollarSign, AlertTriangle } from 'lucide-react';
+import ProgressPieChart from './ProgressPieChart';
 import { useProject } from '../../context/ProjectContext';
 
 export const ProjectSummary: React.FC = () => {
@@ -102,10 +103,13 @@ export const ProjectSummary: React.FC = () => {
                 <div className="rounded-full bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700">{currentProject.progress}%</div>
               </div>
               <div className="w-full bg-slate-100 rounded-full h-1.5">
-                <div 
-                  className="bg-gradient-to-r from-teal-400 to-teal-600 h-1.5 rounded-full" 
+                <div
+                  className="bg-gradient-to-r from-teal-400 to-teal-600 h-1.5 rounded-full"
                   style={{ width: `${currentProject.progress}%` }}
                 ></div>
+              </div>
+              <div className="mt-6 flex justify-center">
+                <ProgressPieChart progress={currentProject.progress} />
               </div>
             </div>
             
