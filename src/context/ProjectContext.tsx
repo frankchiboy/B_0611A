@@ -183,6 +183,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     // 設為當前專案
     setCurrentProjectState(newProject);
     
+    // 保存到 localStorage
+    saveProjectsToStorage([...projects, newProject], newProject.id);
+    
     // 更新最近專案列表
     updateRecentProjects({
       fileName: newProject.name,
@@ -192,7 +195,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     });
 
     console.log('新專案已建立:', newProject.name);
-  }, []);
+  }, [projects, saveProjectsToStorage]);
 
   // 更新專案
   const updateProject = useCallback((updatedProject: Project) => {
@@ -220,6 +223,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
 
   // 刪除專案
   const deleteProject = useCallback((projectId: string) => {
+    console.log('刪除專案:', projectId);
+    
     setProjects(prev => {
       const updatedProjects = prev.filter(p => p.id !== projectId);
       saveProjectsToStorage(updatedProjects);
